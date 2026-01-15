@@ -7,7 +7,7 @@ class Turret:
     def __init__(self, motor_port):
         self.shooter1 = rev.SparkMax(1, rev.SparkLowLevel.MotorType.kBrushless)
         self.shooter2 = rev.SparkMax(1, rev.SparkLowLevel.MotorType.kBrushless)
-        self.yaw = phoenix6.hardware.TalonFX(1, "Kraken")
+        self.yaw = phoenix6.hardware.TalonFX(1, "rio")
         self.pitch = rev.SparkMax(1, rev.SparkLowLevel.MotorType.kBrushless)
 
         self.shooter = wpilib.MotorControllerGroup(self.shooter1, self.shooter2)
