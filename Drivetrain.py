@@ -12,7 +12,7 @@ class Drivetrain():
         self.left_motors = wpilib.MotorControllerGroup(self.left_front_motor,self.left_back_motor)
         self.right_motors = wpilib.MotorControllerGroup(self.right_front_motor,self.right_back_motor)
         self.Drivetrain = wpilib.drive.DifferentialDrive(self.left_motors,self.right_motors)
-
+        self.left_motors.setInverted(True)
 
     def arcadeDrive(self,speed,rotate):
         self.Drivetrain.arcadeDrive(speed,rotate)
