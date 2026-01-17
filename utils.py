@@ -1,7 +1,6 @@
 from math import tan
 
-
-class PhotonUtils:
+class Utils:
     @staticmethod
     def calculateDistanceToTargetMeters(
         cameraHeightMeters: float,

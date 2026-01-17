@@ -22,6 +22,7 @@ class Drivetrain:
 
         self.navx = navx.AHRS.create_spi()
         self.pid_angular = wpimath.controller.PIDController(0.1, 0, 0)
+        self.pid_forward = wpimath.controller.PIDController(0.1, 0, 0)
         self.camera = AprilTagCamera("Camera7459")
 
     def Front(self) -> None:
@@ -40,6 +41,12 @@ class Drivetrain:
         yaw = self.camera.getYaw(tag)
         turn = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(0, turn)
+    
+    def arcadeDriveAimAndRange(self, tag: int) -> None:
+        yaw, range = self.camera.getYawWithRange(tag)
+        range = -self.pid_forward.calculate(range, constants.kGoalRangeMeters)
+        rotation = self.pid_angular.calculate(yaw, 0)
+        self.drivetrain.arcadeDrive(range, rotation)
     
     def turnToDegrees(self, setpoint: Optional[int]) -> None:
         self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), self.pid_angular.getSetpoint()))

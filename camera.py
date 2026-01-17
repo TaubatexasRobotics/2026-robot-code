@@ -1,4 +1,4 @@
-import photonlibpy
+from photonlibpy import PhotonCamera
 import wpimath.units
 import constants
 from typing import Optional, Tuple
@@ -8,7 +8,7 @@ from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 
 class AprilTagCamera:
     def __init__(self, camera: str) -> None:
-        self.camera = photonlibpy.PhotonCamera(camera)
+        self.camera = PhotonCamera(camera)
 
     def getBestTarget(self) -> Optional[PhotonTrackedTarget]:
         result = self.camera.getLatestResult()
@@ -34,7 +34,7 @@ class AprilTagCamera:
             for target in result.getTargets():
                 if target.getFiducialId() == tag:
                     target_range = Utils.calculateDistanceToTargetMeters(
-                        constants.CAMERA_HEIGHT_METERS,
+                        constants.kCameraHeightMeters,
                         constants.TARGET_HEIGHT_METERS,
                         constants.CAMERA_PITCH_RADIANS,
                         wpimath.units.degreesToRadians(target.getPitch())
