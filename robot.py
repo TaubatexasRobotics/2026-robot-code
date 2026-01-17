@@ -12,3 +12,4 @@ class Robot(TimedRobot):
     
     def teleopPeriodic(self) -> None:
         self.drivetrain.arcadeDriveAlign(3)
+        self.drivetrain.arcadeDriveAlign2

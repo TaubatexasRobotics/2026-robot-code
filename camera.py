@@ -2,7 +2,7 @@ import photonlibpy
 import wpimath.units
 import constants
 from typing import Optional, Tuple
-#from utils import Utils
+from utils import Utils
 
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 
@@ -25,7 +25,7 @@ class AprilTagCamera:
                 if target.getFiducialId() == tag:
                     return target.getYaw()
         return -1
-    '''
+
     def getYawWithRange(self, tag: int) -> Tuple[float, float]:
         results = self.camera.getAllUnreadResults()
         target_range = 0
@@ -41,4 +41,3 @@ class AprilTagCamera:
                     )
                     return target.getYaw(), target_range
         return -1, -1
-    '''

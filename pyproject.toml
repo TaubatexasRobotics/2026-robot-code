@@ -25,6 +25,6 @@ components = [
 requires = [
     "robotpy-navx==2026.0.0b1",
     "robotpy-rev",
-    "photonlibpy==2026.0.1b38", 
+    "photonlibpy==2026.1.1rc3 ", 
     "robotpy-ctre"
 ]
