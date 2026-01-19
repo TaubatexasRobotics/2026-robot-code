@@ -35,8 +35,8 @@ class AprilTagCamera:
                 if target.getFiducialId() == tag:
                     target_range = Utils.calculateDistanceToTargetMeters(
                         constants.kCameraHeightMeters,
-                        constants.TARGET_HEIGHT_METERS,
-                        constants.CAMERA_PITCH_RADIANS,
+                        constants.kTargetHeightMeters,
+                        constants.kCameraPitchRadians,
                         wpimath.units.degreesToRadians(target.getPitch())
                     )
                     return target.getYaw(), target_range
