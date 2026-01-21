@@ -1,5 +1,6 @@
 import wpilib
 import wpimath.controller
+import math
 import rev
 import wpilib.drive
 import navx
@@ -65,3 +66,9 @@ class Drivetrain:
         setpoint = 180 / 360
 
         self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), setpoint))
+
+    def distance(self) -> None:
+        p = 0,0
+        q = self.camera.getBestTarget()
+        return math.dist( (p), (q))
+            
