@@ -68,7 +68,7 @@ class Drivetrain:
         self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), setpoint))
 
     def distance(self) -> None:
-        p = 0,0
-        q = self.camera.getBestTarget()
+        p = 0.0, 0.0
+        q = self.camera.getYawWithRange
         return math.dist( (p), (q))
             

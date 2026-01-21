@@ -8,3 +8,4 @@ class Robot(TimedRobot):
     
     def teleopPeriodic(self) -> None:
         self.drivetrain.arcadeDriveAimAndRange(3)
+        self.drivetrain.distance
