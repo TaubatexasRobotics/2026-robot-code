@@ -6,7 +6,7 @@ from utils import Utils
 
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 
-class AprilTagCamera:
+class AprilTagCamera(PhotonCamera):
     def __init__(self, camera: str) -> None:
         self.camera = PhotonCamera(camera)
 

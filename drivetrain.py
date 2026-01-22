@@ -6,10 +6,9 @@ import navx
 import constants
 from typing import Optional
 import phoenix5
-from camera import AprilTagCamera
 
 class Drivetrain:
-    def __init__(self) -> None:
+    def __init__(self, camera) -> None:
         self.left_front_motor = phoenix5.WPI_VictorSPX(constants.kLeftFrontId)
         self.left_back_motor = phoenix5.WPI_VictorSPX(constants.kLeftBackId)
         self.right_front_motor = phoenix5.WPI_VictorSPX(constants.kRightFrontId)
@@ -23,7 +22,7 @@ class Drivetrain:
         self.navx = navx.AHRS.create_spi()
         self.pid_angular = wpimath.controller.PIDController(0.1, 0, 0)
         self.pid_forward = wpimath.controller.PIDController(0.1, 0, 0)
-        self.camera = AprilTagCamera("Camera7459")
+        self.camera = camera
 
     def Front(self) -> None:
         self.drivetrain.tankDrive(1,1)
