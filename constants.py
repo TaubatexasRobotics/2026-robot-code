@@ -1,3 +1,5 @@
+from math import pi
+
 # Joystick
 kJoystickDriverPort = 0
 kJoystickCoDriverPort = 1
@@ -19,7 +21,7 @@ kGoalRangeMeters = 1
 kInitialPose = (0, 0, 0)
 
 # Drivetrain Kinematics
-kTrackWidth = 27.0
+kTrackWidthInMeters = 0.5
 
 # Drivetrain PID Controller
 kPIDAngularDrivetrain = (0.1, 0, 0)
@@ -28,3 +30,10 @@ kPIDForwardDrivetrain = (0.1, 0, 0)
 # Drivetrain Encoders
 kLeftEncoder = (1, 2)
 kRightEncoder = (3, 4, True)
+kWheelDiameter = 0.152 # HiGrip
+kGearReduction = 10.7 # Toughbox Mini
+kWheelCircumference = kWheelDiameter * pi
+kRotationToMeters = kWheelCircumference / kGearReduction
+kEncoderPPR = 2048
+kDistancePerPulse = kRotationToMeters / kEncoderPPR
+kRotationsPerMinuteToMetersPerSeconds = kRotationsToMeters / 60

@@ -30,6 +30,9 @@ class Drivetrain(Subsystem):
         self.left_encoder = Encoder(*constants.kLeftEncoder)
         self.right_encoder = Encoder(*constants.kRightEncoder)
 
+        self.left_encoder.setDistancePerPulse(constants.kDistancePerPulse)
+        self.right_encoder.setDistancePerPulse(constants.kDistancePerPulse)
+
         self.navx = AHRS.create_spi()
         self.navx.reset()
 
@@ -41,10 +44,13 @@ class Drivetrain(Subsystem):
         self.pose = Pose2d(*constants.kInitialPose)
 
         self.odometry = DifferentialDriveOdometry(
-            rotation, 0, 0, self.pose
+            rotation, 
+            self.left_encoder.getDistance(), 
+            self.right_encoder.getDistance(), 
+            self.pose
         )
         self.kinematics = DifferentialDriveKinematics(
-            inchesToMeters(constants.kTrackWidth)
+            constants.kTrackWidthInMeters
         )
 
         AutoBuilder.configure(
@@ -72,9 +78,12 @@ class Drivetrain(Subsystem):
         )
 
     def getRobotRelativeSpeeds(self) -> ChassisSpeeds:
-        wheelSpeeds = DifferentialDriveWheelSpeeds()
+        wheelSpeeds = DifferentialDriveWheelSpeeds(
+            self.left_encoder.getRate(),
+            self.right_encoder.getRate()
+        )
         return self.kinematics.toChassisSpeeds(wheelSpeeds)
-
+    
     def front(self) -> None:
         self.drivetrain.tankDrive(1, 0)
 
@@ -91,8 +100,8 @@ class Drivetrain(Subsystem):
         """Updates the field-relative position."""
         self.odometry.update(
             Rotation2d.fromDegrees(self.navx.getAngle()),
-            self.leftEncoder.getDistance(),
-            self.rightEncoder.getDistance(),
+            self.left_encoder.getDistance(),
+            self.right_rncoder.getDistance(),
         )
 
     def arcadeDriveAlign(self, tag: int) -> None:

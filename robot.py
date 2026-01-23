@@ -12,6 +12,9 @@ class Robot(TimedRobot):
         self.driver_joystick = wpilib.Joystick(constants.kJoystickDriverPort)
         self.codriver_joystick = wpilib.Joystick(constants.kJoystickCoDriverPort)
 
+    def robotPeriodic(self) -> None:
+        self.drivetrain.updateOdometry()
+
     def teleopPeriodic(self) -> None:
         if self.joystick.getRawButton(1):
             self.turret.yawLeft()
