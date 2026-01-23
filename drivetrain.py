@@ -1,40 +1,108 @@
-import wpilib
-import wpimath.controller
-import rev
-import wpilib.drive
-import navx
 import constants
+
+from commands2 import Subsystem
 from typing import Optional
-import phoenix5
+from camera import AprilTagCamera
+from phoenix5 import WPI_VictorSPX
+from wpilib import MotorControllerGroup, DriverStation, Encoder
+from navx import AHRS
+from wpilib.drive import DifferentialDrive
+from wpimath.controller import PIDController
+from wpimath.geometry import Pose2d, Rotation2d
+from pathplannerlib.auto import AutoBuilder
+from pathplannerlib.controller import PPLTVController
+from pathplannerlib.config import RobotConfig
+from wpimath.kinematics import DifferentialDriveOdometry, ChassisSpeeds
+from wpimath.units import inchesToMeters
 
-class Drivetrain:
-    def __init__(self, camera) -> None:
-        self.left_front_motor = phoenix5.WPI_VictorSPX(constants.kLeftFrontId)
-        self.left_back_motor = phoenix5.WPI_VictorSPX(constants.kLeftBackId)
-        self.right_front_motor = phoenix5.WPI_VictorSPX(constants.kRightFrontId)
-        self.right_back_motor = phoenix5.WPI_VictorSPX(constants.kRightBackId)
+class Drivetrain(Subsystem):
+    def __init__(self, camera: AprilTagCamera) -> None:
+        self.left_front_motor = WPI_VictorSPX(constants.kLeftFrontId)
+        self.left_back_motor = WPI_VictorSPX(constants.kLeftBackId)
+        self.right_front_motor = WPI_VictorSPX(constants.kRightFrontId)
+        self.right_back_motor = WPI_VictorSPX(constants.kRightBackId)
 
-        self.left_motors = wpilib.MotorControllerGroup(self.left_front_motor,self.left_back_motor)
-        self.right_motors = wpilib.MotorControllerGroup(self.right_front_motor,self.right_back_motor)
+        self.left_motors = MotorControllerGroup(self.left_front_motor, self.left_back_motor)
+        self.right_motors = MotorControllerGroup(self.right_front_motor, self.right_back_motor)
         self.right_motors.setInverted(True)
-        self.drivetrain = wpilib.drive.DifferentialDrive(self.left_motors,self.right_motors)
+        self.drivetrain = DifferentialDrive(self.left_motors, self.right_motors)
 
-        self.navx = navx.AHRS.create_spi()
-        self.pid_angular = wpimath.controller.PIDController(0.1, 0, 0)
-        self.pid_forward = wpimath.controller.PIDController(0.1, 0, 0)
+        self.left_encoder = Encoder(*constants.kLeftEncoder)
+        self.right_encoder = Encoder(*constants.kRightEncoder)
+
+        self.left_encoder.setDistancePerPulse(constants.kDistancePerPulse)
+        self.right_encoder.setDistancePerPulse(constants.kDistancePerPulse)
+
+        self.navx = AHRS.create_spi()
+        self.navx.reset()
+
+        self.pid_angular = PIDController(*constants.kPIDAngularDrivetrain)
+        self.pid_forward = PIDController(*constants.kPIDForwardDrivetrain)
+
+        rotation = Rotation2d.fromDegrees(self.navx.getAngle())
+
+        self.pose = Pose2d(*constants.kInitialPose)
+
+        self.odometry = DifferentialDriveOdometry(
+            rotation, 
+            self.left_encoder.getDistance(), 
+            self.right_encoder.getDistance(), 
+            self.pose
+        )
+        self.kinematics = DifferentialDriveKinematics(
+            constants.kTrackWidthInMeters
+        )
+
+        AutoBuilder.configure(
+            self.odometry.getPose,
+            self.resetPose,
+            self.getRobotRelativeSpeeds,
+            lambda: speeds, feedforwards: self.driveRobotRelative(speeds)
+            PPLTVController(0.02),
+            config,
+            self.shouldFlipPath,
+            self
+        )
+
         self.camera = camera
 
-    def Front(self) -> None:
-        self.drivetrain.tankDrive(1,1)
+    def shouldFlipPath():
+        return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
-    def Back(self) -> None:
-        self.drivetrain.tankDrive(-1,-1)
+    def resetPose(self, pose: Pose2d) -> None:
+        self.odometry.resetPosition(
+            Rotation2d.fromDegrees(self.navx.getAngle()),
+            self.left_encoder.getDistance(),
+            self.right_encoder.getDistance(),
+            pose
+        )
 
-    def arcadeDrive(self, speed, rotate) -> None:
+    def getRobotRelativeSpeeds(self) -> ChassisSpeeds:
+        wheelSpeeds = DifferentialDriveWheelSpeeds(
+            self.left_encoder.getRate(),
+            self.right_encoder.getRate()
+        )
+        return self.kinematics.toChassisSpeeds(wheelSpeeds)
+    
+    def front(self) -> None:
+        self.drivetrain.tankDrive(1, 0)
+
+    def back(self) -> None:
+        self.drivetrain.tankDrive(-1, 0)
+
+    def arcadeDrive(self, speed: float, rotate: float) -> None:
         self.drivetrain.arcadeDrive(speed, rotate)
 
-    def tankDrive(self, left_speed, right_speed,) -> None:
+    def tankDrive(self, left_speed: float, right_speed: float) -> None:
         self.drivetrain.tankDrive(left_speed, right_speed)
+
+    def updateOdometry(self):
+        """Updates the field-relative position."""
+        self.odometry.update(
+            Rotation2d.fromDegrees(self.navx.getAngle()),
+            self.left_encoder.getDistance(),
+            self.right_rncoder.getDistance(),
+        )
 
     def arcadeDriveAlign(self, tag: int) -> None:
         yaw = self.camera.getYaw(tag)
@@ -43,7 +111,7 @@ class Drivetrain:
     
     def arcadeDriveAimAndRange(self, tag: int) -> None:
         yaw, range = self.camera.getYawWithRange(tag)
-        range = self.pid_forward.calculate(range, constants.kGoalRangeMeters)
+        range = self.pid_forward.calculate(range, constants.kGoalRangeMeters) if yaw != -1 else 0
         rotation = self.pid_angular.calculate(yaw, 0)
         self.drivetrain.arcadeDrive(range, rotation)
     
@@ -53,7 +121,7 @@ class Drivetrain:
     def turnTo90DegreesPositive(self, setpoint: Optional[int]) -> None:
         setpoint = 90 / 360
 
-        self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), +setpoint))
+        self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), setpoint))
 
     def turnTo90DegreesNegative(self, setpoint: Optional[int]) -> None:
         setpoint = 90 / 360

@@ -6,7 +6,7 @@ from camera import AprilTagCamera
 
 
 class Turret:
-    def __init__(self, camera):
+    def __init__(self, camera: AprilTagCamera):
         self.shooter1 = rev.SparkMax(1, rev.SparkLowLevel.MotorType.kBrushless)
         self.shooter2 = rev.SparkMax(2, rev.SparkLowLevel.MotorType.kBrushless)
         self.kraken = phoenix6.hardware.TalonFX(20)
@@ -16,7 +16,7 @@ class Turret:
         self.shooter1.setInverted(True)
         self.pid_angular = wpimath.controller.PIDController(0.1, 0, 0)
         self.pid_forward = wpimath.controller.PIDController(0.1, 0, 0)
-        self.camera = AprilTagCamera("Camera7459")
+        self.camera = camera
 
     def shooterSpeed(self, speed):
         self.shooter.set(speed)
