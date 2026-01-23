@@ -2,6 +2,9 @@
 tests/
 .wpilib/
 
+# CTRE Simulator
+ctre_sim
+
 # Those were created when running `python -m robotpy sim`
 networktables.json
 simgui-ds.json

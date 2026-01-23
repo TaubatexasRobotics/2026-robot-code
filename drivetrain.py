@@ -8,14 +8,14 @@ from wpilib import MotorControllerGroup, DriverStation
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController
-from wpimath.geometry import Pose2d
+from wpimath.geometry import Pose2d, Rotation2d
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPLTVController
 from pathplannerlib.config import RobotConfig
 from wpimath.kinematics import DifferentialDriveOdometry
 
 class Drivetrain(Subsystem):
-    def __init__(self) -> None:
+    def __init__(self, camera: AprilTagCamera) -> None:
         self.left_front_motor = WPI_VictorSPX(constants.kLeftFrontId)
         self.left_back_motor = WPI_VictorSPX(constants.kLeftBackId)
         self.right_front_motor = WPI_VictorSPX(constants.kRightFrontId)
@@ -27,14 +27,18 @@ class Drivetrain(Subsystem):
         self.drivetrain = DifferentialDrive(self.left_motors,self.right_motors)
 
         self.navx = AHRS.create_spi()
+        self.navx.reset()
+
         self.pid_angular = PIDController(0.1, 0, 0)
         self.pid_forward = PIDController(0.1, 0, 0)
         self.camera = AprilTagCamera(constants.kCameraName)
 
-        self.pose = Pose2d()
-        self.odometry = DifferentialDriveOdometry(
-            self.gyro.getRotation2d(),
+        rotation = Rotation2d.fromDegrees(self.navx.getAngle())
 
+        self.pose = Pose2d(*constants.kInitialPose)
+
+        self.odometry = DifferentialDriveOdometry(
+            rotation, 0, 0, self.pose
         )
 
         AutoBuilder.configure(
@@ -48,14 +52,21 @@ class Drivetrain(Subsystem):
             self
         )
 
+        self.camera = camera
+
     def shouldFlipPath():
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
     def getPose(self) -> Pose2d:
-        return self.pose
+        return self.odometry.getPose()
     
     def resetPose(self) -> None:
-        
+        self.odometry.resetPosition(
+            Rotation2d.fromDegrees(self.navx.getAngle()),
+            self.left_encoder.getDistance(),
+            self.right_encoder.getDistance(),
+            self.pose
+        )
 
     def Front(self) -> None:
         self.drivetrain.tankDrive(1,1)
