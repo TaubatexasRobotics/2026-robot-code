@@ -21,17 +21,16 @@ class Drivetrain(Subsystem):
         self.right_front_motor = WPI_VictorSPX(constants.kRightFrontId)
         self.right_back_motor = WPI_VictorSPX(constants.kRightBackId)
 
-        self.left_motors = MotorControllerGroup(self.left_front_motor,self.left_back_motor)
-        self.right_motors = MotorControllerGroup(self.right_front_motor,self.right_back_motor)
+        self.left_motors = MotorControllerGroup(self.left_front_motor, self.left_back_motor)
+        self.right_motors = MotorControllerGroup(self.right_front_motor, self.right_back_motor)
         self.right_motors.setInverted(True)
-        self.drivetrain = DifferentialDrive(self.left_motors,self.right_motors)
+        self.drivetrain = DifferentialDrive(self.left_motors, self.right_motors)
 
         self.navx = AHRS.create_spi()
         self.navx.reset()
 
-        self.pid_angular = PIDController(0.1, 0, 0)
-        self.pid_forward = PIDController(0.1, 0, 0)
-        self.camera = AprilTagCamera(constants.kCameraName)
+        self.pid_angular = PIDController(*constants.kPIDAngularDrivetrain)
+        self.pid_forward = PIDController(*constants.kPIDForwardDrivetrain)
 
         rotation = Rotation2d.fromDegrees(self.navx.getAngle())
 
@@ -68,17 +67,25 @@ class Drivetrain(Subsystem):
             self.pose
         )
 
-    def Front(self) -> None:
-        self.drivetrain.tankDrive(1,1)
+    def front(self) -> None:
+        self.drivetrain.tankDrive(1, 0)
 
-    def Back(self) -> None:
-        self.drivetrain.tankDrive(-1,-1)
+    def back(self) -> None:
+        self.drivetrain.tankDrive(-1, 0)
 
-    def arcadeDrive(self, speed, rotate) -> None:
+    def arcadeDrive(self, speed: float, rotate: float) -> None:
         self.drivetrain.arcadeDrive(speed, rotate)
 
-    def tankDrive(self, left_speed, right_speed,) -> None:
+    def tankDrive(self, left_speed: float, right_speed: float) -> None:
         self.drivetrain.tankDrive(left_speed, right_speed)
+
+    def updateOdometry(self):
+        """Updates the field-relative position."""
+        self.odometry.update(
+            Rotation2d.fromDegrees(self.navx.getAngle()),
+            self.leftEncoder.getDistance(),
+            self.rightEncoder.getDistance(),
+        )
 
     def arcadeDriveAlign(self, tag: int) -> None:
         yaw = self.camera.getYaw(tag)
@@ -97,7 +104,7 @@ class Drivetrain(Subsystem):
     def turnTo90DegreesPositive(self, setpoint: Optional[int]) -> None:
         setpoint = 90 / 360
 
-        self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), +setpoint))
+        self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), setpoint))
 
     def turnTo90DegreesNegative(self, setpoint: Optional[int]) -> None:
         setpoint = 90 / 360
