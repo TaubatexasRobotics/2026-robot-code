@@ -18,6 +18,13 @@ kGoalRangeMeters = 1
 # Drivetrain Odometry
 kInitialPose = (0, 0, 0)
 
+# Drivetrain Kinematics
+kTrackWidth = 27.0
+
 # Drivetrain PID Controller
 kPIDAngularDrivetrain = (0.1, 0, 0)
 kPIDForwardDrivetrain = (0.1, 0, 0)
+
+# Drivetrain Encoders
+kLeftEncoder = (1, 2)
+kRightEncoder = (3, 4, True)

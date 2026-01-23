@@ -4,7 +4,7 @@ from commands2 import Subsystem
 from typing import Optional
 from camera import AprilTagCamera
 from phoenix5 import WPI_VictorSPX
-from wpilib import MotorControllerGroup, DriverStation
+from wpilib import MotorControllerGroup, DriverStation, Encoder
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController
@@ -12,7 +12,8 @@ from wpimath.geometry import Pose2d, Rotation2d
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPLTVController
 from pathplannerlib.config import RobotConfig
-from wpimath.kinematics import DifferentialDriveOdometry
+from wpimath.kinematics import DifferentialDriveOdometry, ChassisSpeeds
+from wpimath.units import inchesToMeters
 
 class Drivetrain(Subsystem):
     def __init__(self, camera: AprilTagCamera) -> None:
@@ -25,6 +26,9 @@ class Drivetrain(Subsystem):
         self.right_motors = MotorControllerGroup(self.right_front_motor, self.right_back_motor)
         self.right_motors.setInverted(True)
         self.drivetrain = DifferentialDrive(self.left_motors, self.right_motors)
+
+        self.left_encoder = Encoder(*constants.kLeftEncoder)
+        self.right_encoder = Encoder(*constants.kRightEncoder)
 
         self.navx = AHRS.create_spi()
         self.navx.reset()
@@ -39,9 +43,12 @@ class Drivetrain(Subsystem):
         self.odometry = DifferentialDriveOdometry(
             rotation, 0, 0, self.pose
         )
+        self.kinematics = DifferentialDriveKinematics(
+            inchesToMeters(constants.kTrackWidth)
+        )
 
         AutoBuilder.configure(
-            self.getPose,
+            self.odometry.getPose,
             self.resetPose,
             self.getRobotRelativeSpeeds,
             lambda: speeds, feedforwards: self.driveRobotRelative(speeds)
@@ -56,16 +63,17 @@ class Drivetrain(Subsystem):
     def shouldFlipPath():
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
-    def getPose(self) -> Pose2d:
-        return self.odometry.getPose()
-    
-    def resetPose(self) -> None:
+    def resetPose(self, pose: Pose2d) -> None:
         self.odometry.resetPosition(
             Rotation2d.fromDegrees(self.navx.getAngle()),
             self.left_encoder.getDistance(),
             self.right_encoder.getDistance(),
-            self.pose
+            pose
         )
+
+    def getRobotRelativeSpeeds(self) -> ChassisSpeeds:
+        wheelSpeeds = DifferentialDriveWheelSpeeds()
+        return self.kinematics.toChassisSpeeds(wheelSpeeds)
 
     def front(self) -> None:
         self.drivetrain.tankDrive(1, 0)
