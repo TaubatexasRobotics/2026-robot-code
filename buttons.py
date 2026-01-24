@@ -28,6 +28,35 @@ dualshock4_map = {
     "right-trigger-axis": 4 
 }
 
+#Generic dualshock4
+
+g_ps4_controller = {
+    "square": 4,
+    "cross": 3,
+    "circle": 2,
+    "triangle": 1,
+    "l1": 5,
+    "r1": 6,
+    "l2": 7,
+    "r2": 8,
+    "share": 9,
+    "options": 10,
+    "l3": 11,
+    "r3": 12,
+    "ps": 13,
+    "touchpad": 14,
+    "pov-up": 0,
+    "pov-down": 180,
+    "pov-left": 270,
+    "pov-right": 90,
+    "left-x-axis": 0,
+    "left-y-axis": 1,
+    "right-x-axis": 2,
+    "right-y-axis": 3,
+    "left-trigger-axis": 2, 
+    "right-trigger-axis": 3 
+}
+
 # Generic Nintendo Switch Pro Controller
 g_pro_controller = {
     "capture": 0,
