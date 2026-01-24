@@ -4,6 +4,8 @@ from wpilib import SerialPort
 # Joystick
 kJoystickDriverPort = 0
 kJoystickCoDriverPort = 1
+kXboxController = "Controller(XBOX 360 For Windows)"
+kGenericPS4Controller = "Wire PS4 Controller"
 
 # Drivetrain
 kLeftFrontId = 1
