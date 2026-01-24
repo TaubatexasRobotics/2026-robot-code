@@ -1,10 +1,10 @@
-from wpilib import TimedRobot
+import wpilib
 from drivetrain import Drivetrain
 from camera import AprilTagCamera
 from turret import Turret
 import constants
 
-class Robot(TimedRobot):
+class Robot(wpilib.TimedRobot):
     def robotInit(self) -> None:
         self.camera = AprilTagCamera(constants.kCameraName)
         self.drivetrain = Drivetrain(self.camera)
