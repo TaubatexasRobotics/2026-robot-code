@@ -1,4 +1,5 @@
 from math import pi
+from wpilib import SerialPort
 
 # Joystick
 kJoystickDriverPort = 0
@@ -37,3 +38,9 @@ kRotationToMeters = kWheelCircumference / kGearReduction
 kEncoderPPR = 2048
 kDistancePerPulse = kRotationToMeters / kEncoderPPR
 kRotationsPerMinuteToMetersPerSeconds = kRotationsToMeters / 60
+
+# Arduino
+kBaudRate = 9600
+
+# WS2812b LEDs
+kLEDUSBPort = SerialPort.Port.kUSB1
