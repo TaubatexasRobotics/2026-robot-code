@@ -9,10 +9,10 @@ from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController
 from wpimath.geometry import Pose2d, Rotation2d
+from pathplannerlib.config import RobotConfig
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPLTVController
-from pathplannerlib.config import RobotConfig
-from wpimath.kinematics import DifferentialDriveOdometry, ChassisSpeeds
+from wpimath.kinematics import DifferentialDriveOdometry, ChassisSpeeds, DifferentialDriveKinematics
 from wpimath.units import inchesToMeters
 
 class Drivetrain(Subsystem):
@@ -53,11 +53,13 @@ class Drivetrain(Subsystem):
             constants.kTrackWidthInMeters
         )
 
+        config = RobotConfig.fromGUISettings()
+
         AutoBuilder.configure(
             self.odometry.getPose,
             self.resetPose,
             self.getRobotRelativeSpeeds,
-            lambda: speeds, feedforwards: self.driveRobotRelative(speeds)
+            lambda speeds, feedforwards: self.driveRobotRelative(speeds),
             PPLTVController(0.02),
             config,
             self.shouldFlipPath,
@@ -101,7 +103,7 @@ class Drivetrain(Subsystem):
         self.odometry.update(
             Rotation2d.fromDegrees(self.navx.getAngle()),
             self.left_encoder.getDistance(),
-            self.right_rncoder.getDistance(),
+            self.right_encoder.getDistance(),
         )
 
     def arcadeDriveAlign(self, tag: int) -> None:

@@ -17,11 +17,11 @@ class Robot(TimedRobot):
         self.drivetrain.updateOdometry()
 
     def teleopPeriodic(self) -> None:
-        if self.joystick.getA():
+        if self.driver_joystick.getA():
             self.turret.yawLeft()
-        elif self.joystick.getB():
+        elif self.driver_joystick.getB():
             self.turret.yawRight()
-        elif self.joystick.getC():
+        elif self.driver_joystick.getX():
             self.turret.TurretAlign(1)
         else:
             self.turret.turnOffKraken()
