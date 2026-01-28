@@ -1,8 +1,12 @@
 from math import pi
+from wpilib import SerialPort
+from pathplannerlib.config import RobotConfig, ModuleConfig
 
 # Joystick
 kJoystickDriverPort = 0
 kJoystickCoDriverPort = 1
+kXboxController = "Controller (XBOX 360 For Windows)"
+kGenericPS4Controller = "Wire PS4 Controller"
 
 # Drivetrain
 kLeftFrontId = 1
@@ -33,7 +37,13 @@ kRightEncoder = (3, 4, True)
 kWheelDiameter = 0.152 # HiGrip
 kGearReduction = 10.7 # Toughbox Mini
 kWheelCircumference = kWheelDiameter * pi
-kRotationToMeters = kWheelCircumference / kGearReduction
+kRotationsToMeters = kWheelCircumference / kGearReduction
 kEncoderPPR = 2048
-kDistancePerPulse = kRotationToMeters / kEncoderPPR
+kDistancePerPulse = kRotationsToMeters / kEncoderPPR
 kRotationsPerMinuteToMetersPerSeconds = kRotationsToMeters / 60
+
+# Arduino
+kBaudRate = 9600
+
+# WS2812b LEDs
+kLEDUSBPort = SerialPort.Port.kUSB1
