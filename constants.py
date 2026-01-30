@@ -5,10 +5,10 @@ kJoystickDriverPort = 0
 kJoystickCoDriverPort = 1
 
 # Drivetrain
-kLeftFrontId = 1
-kLeftBackId = 2
-kRightFrontId = 3
-kRightBackId = 4
+kLeftFrontId = 51
+kLeftBackId = 52
+kRightFrontId = 55
+kRightBackId = 53
 
 # PhotonVision
 kCameraName = "Camera7459"

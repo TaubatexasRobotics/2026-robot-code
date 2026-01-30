@@ -160,7 +160,7 @@ class Drivetrain(Subsystem):
 
     def turnTo90DegreesPositive(self, setpoint: Optional[int]) -> None:
         if (self.navx.getYaw > 90):
-            setpoint = self.navx.getYaw - 270 / 360
+            setpoint = self.navx.getYaw - (270) / 360
         else:
             setpoint = self.navx.getYaw + 90 / 360        
 
