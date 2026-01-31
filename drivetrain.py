@@ -6,6 +6,7 @@ from wpilib import MotorControllerGroup, DriverStation
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController
+from wpimath.kinematics import DifferentialDriveOdometry, DifferentialDriveKinematics
 from wpimath.geometry import Pose2d, Rotation2d
 from pathplannerlib.config import RobotConfig
 from pathplannerlib.auto import AutoBuilder
@@ -71,7 +72,7 @@ class Drivetrain(Subsystem):
             constants.kTrackWidthInMeters
         )
 
-        config = RobotConfig.fromGUISettings()
+        pathConfig = RobotConfig.fromGUISettings()
 
         AutoBuilder.configure (
             self.odometry.getPose,

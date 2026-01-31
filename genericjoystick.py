@@ -14,6 +14,7 @@ class GenericJoystick(GenericHID):
                 return self.getRawButton(g_ps4_controller['cross'])
             case constants.kXboxController:
                 return self.getRawButton(g_xbox_360_map['a'])
+        return False
     
     def getB(self) -> bool:
         match self.name:
@@ -21,6 +22,7 @@ class GenericJoystick(GenericHID):
                 return self.getRawButton(g_ps4_controller['circle'])
             case constants.kXboxController:
                 return self.getRawButton(g_xbox_360_map['b'])
+        return False
             
     def getX(self) -> bool:
         match self.name:
@@ -28,6 +30,7 @@ class GenericJoystick(GenericHID):
                 return self.getRawButton(g_ps4_controller['square'])
             case constants.kXboxController:
                 return self.getRawButton(g_xbox_360_map['x'])
+        return False
             
     def getY(self) -> bool:
         match self.name:
@@ -35,20 +38,23 @@ class GenericJoystick(GenericHID):
                 return self.getRawButton(g_ps4_controller['triangle'])
             case constants.kXboxController:
                 return self.getRawButton(g_xbox_360_map['y'])
+        return False
             
-    def getLb(self) -> bool:
+    def getLeftBumper(self) -> bool:
         match self.name:
             case constants.kGenericPS4Controller:
                 return self.getRawButton(g_ps4_controller['l1'])
             case constants.kXboxController:
                 return self.getRawButton(g_xbox_360_map['lb'])
+        return False
             
-    def getRb(self) -> bool:
+    def getRightBumper(self) -> bool:
         match self.name:
             case constants.kGenericPS4Controller:
                 return self.getRawButton(g_ps4_controller['r1'])
             case constants.kXboxController:
                 return self.getRawButton(g_xbox_360_map['rb'])
+        return False
     
     def getBack(self) -> bool:
         match self.name:
@@ -106,33 +112,37 @@ class GenericJoystick(GenericHID):
             case constants.kXboxController:
                 return self.getRawButton(g_xbox_360_map['pov-right'])
     
-    def getL_x_axis(self) -> bool:
+    def getLeftXAxis(self) -> float:
         match self.name:
             case constants.kGenericPS4Controller:
                 return self.getRawAxis(g_ps4_controller['left-x-axis'])
             case constants.kXboxController:
                 return self.getRawAxis(g_xbox_360_map['left-x-axis'])
+        return 0
     
-    def getL_y_stick(self) -> bool:
+    def getLeftYAxis(self) -> float:
         match self.name:
             case constants.kGenericPS4Controller:
                 return self.getRawAxis(g_ps4_controller['left-y-axis'])
             case constants.kXboxController:
                 return self.getRawAxis(g_xbox_360_map['left-y-axis'])
+        return 0
     
-    def getR_x_stick(self) -> bool:
+    def getRightXAxis(self) -> float:
         match self.name:
             case constants.kGenericPS4Controller:
                 return self.getRawAxis(g_ps4_controller['right-x-axis'])
             case constants.kXboxController:
                 return self.getRawAxis(g_xbox_360_map['right-x-axis'])
+        return 0
     
-    def getR_y_stick(self) -> bool:
+    def getRightYAxis(self) -> float:
         match self.name:
             case constants.kGenericPS4Controller:
                 return self.getRawAxis(g_ps4_controller['right-y-axis'])
             case constants.kXboxController:
                 return self.getRawAxis(g_xbox_360_map['right-y-axis'])
+        return 0
     
     def getL_trigger_axis(self) -> bool:
         match self.name:
