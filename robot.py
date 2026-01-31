@@ -1,11 +1,11 @@
-from wpilib import TimedRobot
 from drivetrain import Drivetrain
 from camera import AprilTagCamera
 from turret import Turret
 from genericjoystick import GenericJoystick
+from wpilib import TimedRobot
 import constants
 
-class Robot(TimedRobot):
+class Robot(wpilib.TimedRobot):
     def robotInit(self) -> None:
         self.camera = AprilTagCamera(constants.kCameraName)
         self.drivetrain = Drivetrain(self.camera)
@@ -22,6 +22,3 @@ class Robot(TimedRobot):
         elif self.driver_joystick.getB():
             self.turret.yawRight()
         elif self.driver_joystick.getX():
-            self.turret.TurretAlign(1)
-        else:
-            self.turret.turnOffKraken()

@@ -9,10 +9,10 @@ kXboxController = "Controller (XBOX 360 For Windows)"
 kGenericPS4Controller = "Wire PS4 Controller"
 
 # Drivetrain
-kLeftFrontId = 1
-kLeftBackId = 2
-kRightFrontId = 3
-kRightBackId = 4
+kLeftFrontId = 51
+kLeftBackId = 52
+kRightFrontId = 55
+kRightBackId = 53
 
 # PhotonVision
 kCameraName = "Camera7459"
@@ -36,11 +36,6 @@ kLeftEncoder = (1, 2)
 kRightEncoder = (3, 4, True)
 kWheelDiameter = 0.152 # HiGrip
 kGearReduction = 10.7 # Toughbox Mini
-kWheelCircumference = kWheelDiameter * pi
-kRotationsToMeters = kWheelCircumference / kGearReduction
-kEncoderPPR = 2048
-kDistancePerPulse = kRotationsToMeters / kEncoderPPR
-kRotationsPerMinuteToMetersPerSeconds = kRotationsToMeters / 60
 
 # Arduino
 kBaudRate = 9600
