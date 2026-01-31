@@ -1,28 +1,65 @@
 import wpilib
-import wpilib.drive
 import rev
 import wpimath.controller
 
 class Intake:
     def __init__(self):
-        self.arm_motor = rev.SparkMax(1, rev.SparkLowLevel.MotorType.kBrushless)
-        self.roller_motor = rev.SparkMax(2, rev.SparkLowLevel.MotorType.kBrushless)
-        self.arm_pid = wpimath.controller.PIDController(0.1, 0.0, 0.0)
+        self.motor = rev.SparkMax(constants.kIntakeMotor, rev.SparkLowLevel.MotorType.kBrushless)
+        self.encoder = self.motor.getEncoder()
+
+        # P=0.01 em graus: se errar 90°, dá 0.9 de força (90 * 0.01
+        self.arm_pid = wpimath.controller.PIDController(0.006, 0.0, 0.0)
+        self.arm_pid.setTolerance(0.1) # 1 grau de tolerância
+        self.encoder.setPosition(0)
+
+        wpilib.SmartDashboard.putNumber("Position", 0)
+        self.position = wpilib.SmartDashboard.getNumber("Position", 0)
+
+    def get_posicao_graus(self):
+        wpilib.SmartDashboard.putNumber("Position", self.encoder.getPosition())
+
+    def clockwise(self) -> None:
+        self.motor.set(0.3)
+    
+    def counterClockwise(self) -> None:
+        self.motor.set(-0.3)
+
+    def testeMotor(self):
+        setpoint = -220 
+        posicao_atual = (self.encoder.getPosition() / 2.87) * 360
         
-    def turnOnIntake(self):
-        setpoint = 15
-        self.roller_motor.set(1)
+        output = self.arm_pid.calculate(posicao_atual, setpoint)
+        
+        # Limite de segurança
+        output = max(min(output, 0.4), -0.4) 
 
-        while not self.arm_pid.inSetPoint:
-            self.arm_motor.set(self.arm_pid.calculate(self.arm_motor.getEncoder().getPosition(), setpoint))
+        if not self.arm_pid.atSetpoint():
+            self.motor.set(output)
+        else:
+            self.motor.set(0)
+        
+        print(f"Graus: {posicao_atual:.2f} | Out: {output:.2f}")
 
-    def turnOffIntake(self):
-        setpoint = 0
-        self.roller_motor.set(0) 
+    def Contrario(self):
+        setpoint = -30  # 1/4 de volta em graus
+        posicao_atual = (self.encoder.getPosition() / 2.87) * 360
+        
+        output = self.arm_pid.calculate(posicao_atual, setpoint)
+        
+        # Limite de segurança
+        output = max(min(output, 0.7), -0.7) 
 
-        while not self.arm_pid.inSetPoint:
-            self.arm_motor.set(self.arm_pid.calculate(self.arm_motor.getEncoder().getPosition(), setpoint))
+        if not self.arm_pid.atSetpoint():
+            self.motor.set(output)
+        else:
+            self.motor.set(0)
+        
+        print(f"Graus: {posicao_atual:.2f} | Out: {output:.2f}")
 
-
-
-       
+    def ativar(self, setpoint):
+        posicao_atual = wpilib.SmartDashboard.putNumber("Position", 0) / 64
+        output = self.arm_pid.calculate(posicao_atual, setpoint)  
+        if not self.arm_pid.atSetpoint():
+            self.motor.set(output)
+        else:
+            self.motor.set(0)

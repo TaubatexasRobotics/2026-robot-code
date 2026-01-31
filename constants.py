@@ -13,6 +13,7 @@ kLeftFrontId = 51
 kLeftBackId = 52
 kRightFrontId = 55
 kRightBackId = 53
+kSparkMaxSmartCurrentLimit = 40
 
 # PhotonVision
 kCameraName = "Camera7459"
@@ -42,3 +43,6 @@ kBaudRate = 9600
 
 # WS2812b LEDs
 kLEDUSBPort = SerialPort.Port.kUSB1
+
+# Intake
+kIntakeMotor = 53

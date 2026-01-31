@@ -1,11 +1,8 @@
-from logging import config
 import constants
-
 from commands2 import Subsystem
 from typing import Optional
 from camera import AprilTagCamera
-from phoenix5 import WPI_VictorSPX
-from wpilib import MotorControllerGroup, DriverStation, Encoder
+from wpilib import MotorControllerGroup, DriverStation
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController
@@ -14,37 +11,38 @@ from pathplannerlib.config import RobotConfig
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPLTVController
 from wpimath.units import inchesToMeters
-import rev
+from rev import SparkMax, SparkLowLevel, SparkMaxConfig, FeedbackSensor, ResetMode, PersistMode
 
 class Drivetrain(Subsystem):
     def __init__(self, camera: AprilTagCamera) -> None:
-        self.left_front_motor = rev.SparkMax(constants.kLeftFrontId, rev.SparkLowLevel.MotorType.kBrushless)
-        self.left_back_motor = rev.SparkMax(constants.kLeftBackId, rev.SparkLowLevel.MotorType.kBrushless)
-        self.right_front_motor = rev.SparkMax(constants.kRightFrontId, rev.SparkLowLevel.MotorType.kBrushless)
-        self.right_back_motor = rev.SparkMax(constants.kRightBackId, rev.SparkLowLevel.MotorType.kBrushless)
+        self.left_front_motor = SparkMax(constants.kLeftFrontId, SparkLowLevel.MotorType.kBrushless)
+        self.left_back_motor = SparkMax(constants.kLeftBackId, SparkLowLevel.MotorType.kBrushless)
+        self.right_front_motor = SparkMax(constants.kRightFrontId, SparkLowLevel.MotorType.kBrushless)
+        self.right_back_motor = SparkMax(constants.kRightBackId, SparkLowLevel.MotorType.kBrushless)
 
         self.left_motors = MotorControllerGroup(self.left_front_motor, self.left_back_motor)
         self.right_motors = MotorControllerGroup(self.right_front_motor, self.right_back_motor)
         self.right_motors.setInverted(True)
         self.drivetrain = DifferentialDrive(self.left_motors, self.right_motors)
 
-        config = rev.SparkMaxConfig()
-        config.closedLoop.setFeedbackSensor(rev.FeedbackSensor.kPrimaryEncoder)
-        config.closedLoop.pid(0.00005,0,0)
-        config.closedLoop.velocityFF(0.15)
+        config = SparkMaxConfig()
+        
+        config.closedLoop.setFeedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        #config.closedLoop.pid(0.00005, 0, 0)
+        #config.closedLoop.velocityFF(0.15)
+        config.smartCurrentLimit(constants.kSparkMaxSmartCurrentLimit)
 
-        config.encoder.positionConversionFactor(constants.kWheelCircunference / constants.kGearReduction)
+        #config.encoder.positionConversionFactor(constants.kWheelCircunference / constants.kGearReduction)
 
-        self.left_front_motor.configure(config, rev.ResetMode.kResetSafeParameters, rev.PersistMode.kPersistParameters)
-        self.left_back_motor.configure(config, rev.ResetMode.kResetSafeParameters, rev.PersistMode.kPersistParameters)
-        self.right_front_motor.configure(config, rev.ResetMode.kResetSafeParameters, rev.PersistMode.kPersistParameters)
-        self.right_back_motor.configure(config, rev.ResetMode.kResetSafeParameters, rev.PersistMode.kPersistParameters)   
+        self.left_front_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+        self.left_back_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+        self.right_front_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+        self.right_back_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
 
         self.rightClosedLoop = self.right_front_motor.getClosedLoopController()
         self.right2ClosedLoop = self.right_back_motor.getClosedLoopController()
         self.leftClosedLoop = self.left_front_motor.getClosedLoopController()
         self.left2ClosedLoop = self.left_back_motor.getClosedLoopController()
-
 
         self.left_encoder = self.left_front_motor.getEncoder()
         self.right_encoder = self.right_front_motor.getEncoder()
@@ -122,10 +120,10 @@ class Drivetrain(Subsystem):
         return self.kinematics.toChassisSpeeds(wheelSpeeds)
     
     def front(self) -> None:
-        self.drivetrain.tankDrive(1, 0)
+        self.drivetrain.arcadeDrive(1, 0)
 
     def back(self) -> None:
-        self.drivetrain.tankDrive(-1, 0)
+        self.drivetrain.arcadeDrive(-1, 0)
 
     def arcadeDrive(self, speed: float, rotate: float) -> None:
         self.drivetrain.arcadeDrive(speed, rotate)
@@ -134,7 +132,6 @@ class Drivetrain(Subsystem):
         self.drivetrain.tankDrive(left_speed, right_speed)
 
     def updateOdometry(self):
-        """Updates the field-relative position."""
         self.odometry.update(
             Rotation2d.fromDegrees(self.navx.getAngle()),
             self.left_encoder.getPosition(),
@@ -149,7 +146,7 @@ class Drivetrain(Subsystem):
     def arcadeDriveAimAndRange(self, tag: int) -> None:
         yaw, range = self.camera.getYawWithRange(tag)
         range = self.pid_forward.calculate(range, constants.kGoalRangeMeters) if yaw != -1 else 0
-        rotation = self.pid_angular.calculate(yaw, 0)
+        rotation = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(range, rotation)
     
     def turnToDegrees(self, setpoint: Optional[int]) -> None:
