@@ -6,7 +6,7 @@ from wpilib import TimedRobot
 from intake import Intake
 import constants
 
-class Robot(wpilib.TimedRobot):
+class Robot(TimedRobot):
     def robotInit(self) -> None:
         self.camera = AprilTagCamera(constants.kCameraName)
         self.drivetrain = Drivetrain(self.camera)
@@ -29,12 +29,24 @@ class Robot(wpilib.TimedRobot):
         '''
 
         if self.driver_joystick.getA():
-          self.intake.ativar(-0.7)
+            self.intake.ativar(-0.7)
         elif self.driver_joystick.getB():
-          self.intake.ativar(0)
+            self.intake.ativar(0)
         elif self.driver_joystick.getX():
-          self.intake.clockwise()
+            self.intake.clockwise()
         elif self.driver_joystick.getY():
-          self.intake.counterClockwise()        
+            self.intake.counterClockwise()        
         else:
-            self.intake.arm_motor.set(0)
+            self.intake.stop()
+        
+        if self.driver_joystick.getLeftBumper():
+            self.intake.clockwiseTrack()
+        elif self.driver_joystick.getRightBumper():
+            self.intake.counterClockwiseTrack()
+        else:
+            self.intake.stopTrack()
+          
+        self.drivetrain.arcadeDrive(
+          self.driver_joystick.getLeftXAxis(),
+          self.driver_joystick.getRightXAxis()
+        )

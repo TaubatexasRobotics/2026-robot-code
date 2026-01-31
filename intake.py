@@ -1,10 +1,14 @@
 import wpilib
 import rev
 import wpimath.controller
+import constants
+from phoenix5 import WPI_VictorSPX
 
 class Intake:
     def __init__(self):
-        self.motor = rev.SparkMax(constants.kIntakeMotor, rev.SparkLowLevel.MotorType.kBrushless)
+        self.motor = rev.SparkMax(constants.kIntakeAngleMotor, rev.SparkLowLevel.MotorType.kBrushless)
+        self.track_motor = WPI_VictorSPX(constants.kIntakeTrackMotor)
+
         self.encoder = self.motor.getEncoder()
 
         # P=0.01 em graus: se errar 90°, dá 0.9 de força (90 * 0.01
@@ -23,6 +27,18 @@ class Intake:
     
     def counterClockwise(self) -> None:
         self.motor.set(-0.3)
+
+    def stop(self) -> None:
+        self.motor.set(0)
+
+    def clockwiseTrack(self) -> None:
+        self.track_motor.set(0.5)
+    
+    def counterClockwiseTrack(self) -> None:
+        self.track_motor.set(-0.5)
+    
+    def stopTrack(self) -> None:
+        self.track_motor.set(0)
 
     def testeMotor(self):
         setpoint = -220 

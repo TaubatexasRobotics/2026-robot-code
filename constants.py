@@ -9,10 +9,10 @@ kXboxController = "Controller (XBOX 360 For Windows)"
 kGenericPS4Controller = "Wire PS4 Controller"
 
 # Drivetrain
-kLeftFrontId = 51
+kLeftFrontId = 50
 kLeftBackId = 52
 kRightFrontId = 55
-kRightBackId = 53
+kRightBackId = 54
 kSparkMaxSmartCurrentLimit = 40
 
 # PhotonVision
@@ -45,4 +45,5 @@ kBaudRate = 9600
 kLEDUSBPort = SerialPort.Port.kUSB1
 
 # Intake
-kIntakeMotor = 53
+kIntakeAngleMotor = 53
+kIntakeTrackMotor = 1
