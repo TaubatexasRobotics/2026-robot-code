@@ -7,9 +7,8 @@ class Intake:
         self.arm_motor = rev.SparkMax(53, rev.SparkLowLevel.MotorType.kBrushless)
         self.encoder = self.arm_motor.getEncoder()
 
-        # P=0.01 em graus: se errar 90°, dá 0.9 de força (90 * 0.01
         self.arm_pid = wpimath.controller.PIDController(0.006, 0.0, 0.0)
-        self.arm_pid.setTolerance(0.1) # 1 grau de tolerância
+        self.arm_pid.setTolerance(0.1) 
         self.encoder.setPosition(0)
 
         wpilib.SmartDashboard.putNumber("Position", 0)
