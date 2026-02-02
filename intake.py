@@ -1,60 +1,16 @@
-import wpilib
 import rev
-import wpimath.controller
+import phoenix5
 
 class Intake:
     def __init__(self):
         self.arm_motor = rev.SparkMax(53, rev.SparkLowLevel.MotorType.kBrushless)
-        self.encoder = self.arm_motor.getEncoder()
+        self.roll_motor = phoenix5.WPI_VictorSPX(12)
 
-        self.arm_pid = wpimath.controller.PIDController(0.006, 0.0, 0.0)
-        self.arm_pid.setTolerance(0.1) 
-        self.encoder.setPosition(0)
+    def turnDown(self):
+        self.arm_motor.set(-0.7)
 
-        wpilib.SmartDashboard.putNumber("Position", 0)
-        self.position = wpilib.SmartDashboard.getNumber("Position", 0)
+    def turnUp(self):
+        self.arm_motor.set(0.7)    
 
-    def get_posicao_graus(self):
-        wpilib.SmartDashboard.putNumber("Position", self.encoder.getPosition())
-
-    def testeMotor(self):
-        setpoint = -220 
-        posicao_atual = (self.encoder.getPosition() / 2.87) * 360
-        
-        output = self.arm_pid.calculate(posicao_atual, setpoint)
-        
-        # Limite de segurança
-        output = max(min(output, 0.4), -0.4) 
-
-        if not self.arm_pid.atSetpoint():
-            self.arm_motor.set(output)
-        else:
-            self.arm_motor.set(0)
-        
-        print(f"Graus: {posicao_atual:.2f} | Out: {output:.2f}")
-
-    def Contrario(self):
-        setpoint = -30  # 1/4 de volta em graus
-        posicao_atual = (self.encoder.getPosition() / 2.87) * 360
-
-      
-        
-        output = self.arm_pid.calculate(posicao_atual, setpoint)
-        
-        # Limite de segurança
-        output = max(min(output, 0.7), -0.7) 
-
-        if not self.arm_pid.atSetpoint():
-            self.arm_motor.set(output)
-        else:
-            self.arm_motor.set(0)
-        
-        print(f"Graus: {posicao_atual:.2f} | Out: {output:.2f}")
-
-    def ativar(self, setpoint):
-        posicao_atual = wpilib.SmartDashboard.putNumber("Position", 0) / 64
-        output = self.arm_pid.calculate(posicao_atual, setpoint)  
-        if not self.arm_pid.atSetpoint():
-            self.arm_motor.set(output)
-        else:
-            self.arm_motor.set(0)
+    def suckBalls(self):    
+        self.roll_motor.set(0.8)
