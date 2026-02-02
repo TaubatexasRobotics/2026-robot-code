@@ -9,8 +9,14 @@ class Intake:
     def turnDown(self):
         self.arm_motor.set(-0.7)
 
+    def stopArm(self):
+        self.arm_motor.set(0)   
+
     def turnUp(self):
         self.arm_motor.set(0.7)    
 
     def suckBalls(self):    
         self.roll_motor.set(0.8)
+
+    def stopRoll(self):
+        self.roll_motor.set(0)    
