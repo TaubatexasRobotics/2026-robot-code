@@ -5,7 +5,8 @@ from pathplannerlib.config import RobotConfig, ModuleConfig
 # Joystick
 kJoystickDriverPort = 0
 kJoystickCoDriverPort = 1
-kXboxController = "Controller (XBOX 360 For Windows)"
+kRealXboxController = "Controller (XBOX 360 For Windows)"
+kSimXboxController = "Xbox Controller"
 kGenericPS4Controller = "Wire PS4 Controller"
 
 # Drivetrain

@@ -12,36 +12,34 @@ class Robot(TimedRobot):
         self.drivetrain = Drivetrain(self.camera)
         self.intake = Intake()
 
-        #self.driver_joystick = GenericJoystick(constants.kJoystickDriverPort)
+        self.driver_joystick = GenericJoystick(constants.kJoystickDriverPort)
         #self.codriver_joystick = GenericJoystick(constants.kJoystickCoDriverPort)
-        self.driver_joystick = Joystick(0)
         self.is_intake_enabled = False
 
     def robotPeriodic(self) -> None:
         self.drivetrain.updateOdometry()
 
     def teleopPeriodic(self) -> None:
-        if self.driver_joystick.getRawButton(1):
+        if self.driver_joystick.getA():
             self.intake.turnUp()
-        elif self.driver_joystick.getRawButton(2):
+        elif self.driver_joystick.getB():
             self.intake.turnDown()
         else:
             self.intake.stopArm()
           
         self.drivetrain.arcadeDrive(
-          self.driver_joystick.getRawAxis(1),
-          self.driver_joystick.getRawAxis(4)
+          self.driver_joystick.getLeftYAxis(),
+          self.driver_joystick.getRightXAxis()
         )
-
         
-        if self.driver_joystick.getRawButtonPressed(1):
+        if self.driver_joystick.getX():
             self.is_intake_enabled = not self.is_intake_enabled  
 
         if self.is_intake_enabled:
             self.intake.suckBalls()
             #print("sucking balls")
         else:
-            if self.driver_joystick.getRawButton(4):
+            if self.driver_joystick.getY():
                 self.intake.dropBalls()
                 #print("drop balls")
             else:
