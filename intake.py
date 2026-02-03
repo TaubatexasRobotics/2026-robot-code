@@ -1,11 +1,10 @@
-import rev
-import wpimath.controller
-import constants
+from rev import SparkMax, SparkLowLevel
 from phoenix5 import WPI_VictorSPX
+import constants
 
 class Intake:
     def __init__(self):
-        self.arm_motor = rev.SparkMax(constants.kIntakeAngleMotor, rev.SparkLowLevel.MotorType.kBrushless)
+        self.arm_motor = SparkMax(constants.kIntakeAngleMotor, SparkLowLevel.MotorType.kBrushless)
         self.roll_motor = WPI_VictorSPX(constants.kIntakeTrackMotor)
 
         self.encoder = self.arm_motor.getEncoder()

@@ -15,6 +15,7 @@ class Robot(TimedRobot):
         #self.driver_joystick = GenericJoystick(constants.kJoystickDriverPort)
         #self.codriver_joystick = GenericJoystick(constants.kJoystickCoDriverPort)
         self.driver_joystick = Joystick(0)
+        self.is_intake_enabled = False
 
     def robotPeriodic(self) -> None:
         self.drivetrain.updateOdometry()
@@ -26,43 +27,23 @@ class Robot(TimedRobot):
             self.intake.turnDown()
         else:
             self.intake.stopArm()
-        
-        if self.driver_joystick.getRawButton(3):
-            self.intake.suckBalls()
-        elif self.driver_joystick.getRawButton(4):
-            self.intake.dropBalls()
-        else:
-            self.intake.stopRoll()
           
         self.drivetrain.arcadeDrive(
-          -self.driver_joystick.getRawAxis(1),
-          self.driver_joystick.getRawAxis(0)
+          self.driver_joystick.getRawAxis(1),
+          self.driver_joystick.getRawAxis(4)
         )
 
-        '''
-        self.isIntakeEnabled = False
+        
+        if self.driver_joystick.getRawButtonPressed(1):
+            self.is_intake_enabled = not self.is_intake_enabled  
 
-          if self.joystick.getRawButtonPressed(1):
-        self.isIntakeEnabled = not self.isIntakeEnabled  
-
-        if self.isIntakeEnabled:
+        if self.is_intake_enabled:
             self.intake.suckBalls()
-            print("sucking balls")
+            #print("sucking balls")
         else:
-            if self.joystick.getRawButton(4):
-            self.intake.dropBalls()
-            print("drop balls")
+            if self.driver_joystick.getRawButton(4):
+                self.intake.dropBalls()
+                #print("drop balls")
             else:
-            self.intake.stopRoll()
-            print("stop roll")
-
-        if self.joystick.getRawButton(2):
-            print("arm down")
-            self.intake.turnDown()
-        elif self.joystick.getRawButton(3):
-            self.intake.turnUp()
-            print("arm up")
-        else:
-            self.intake.stopArm()
-            print("arm stopped")
-        '''
+                self.intake.stopRoll()
+                #print("stop roll")
