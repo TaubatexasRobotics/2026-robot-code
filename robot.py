@@ -2,7 +2,7 @@ from drivetrain import Drivetrain
 from camera import AprilTagCamera
 from turret import Turret
 from genericjoystick import GenericJoystick
-from wpilib import TimedRobot
+from wpilib import TimedRobot, Joystick
 from intake import Intake
 import constants
 
@@ -12,41 +12,57 @@ class Robot(TimedRobot):
         self.drivetrain = Drivetrain(self.camera)
         self.intake = Intake()
 
-        self.driver_joystick = GenericJoystick(constants.kJoystickDriverPort)
-        self.codriver_joystick = GenericJoystick(constants.kJoystickCoDriverPort)
+        #self.driver_joystick = GenericJoystick(constants.kJoystickDriverPort)
+        #self.codriver_joystick = GenericJoystick(constants.kJoystickCoDriverPort)
+        self.driver_joystick = Joystick(0)
 
     def robotPeriodic(self) -> None:
         self.drivetrain.updateOdometry()
 
     def teleopPeriodic(self) -> None:
-        '''
-        if self.joystick.getRawButton(1):
-          self.intake.testeMotor()
-        elif self.joystick.getRawButton(2):
-          self.intake.Contrario()
+        if self.driver_joystick.getRawButton(1):
+            self.intake.turnUp()
+        elif self.driver_joystick.getRawButton(2):
+            self.intake.turnDown()
         else:
-            self.intake.arm_motor.set(0)
-        '''
-
-        if self.driver_joystick.getA():
-            self.intake.ativar(-0.7)
-        elif self.driver_joystick.getB():
-            self.intake.ativar(0)
-        elif self.driver_joystick.getX():
-            self.intake.clockwise()
-        elif self.driver_joystick.getY():
-            self.intake.counterClockwise()        
-        else:
-            self.intake.stop()
+            self.intake.stopArm()
         
-        if self.driver_joystick.getLeftBumper():
-            self.intake.clockwiseTrack()
-        elif self.driver_joystick.getRightBumper():
-            self.intake.counterClockwiseTrack()
+        if self.driver_joystick.getRawButton(3):
+            self.intake.suckBalls()
+        elif self.driver_joystick.getRawButton(4):
+            self.intake.dropBalls()
         else:
-            self.intake.stopTrack()
+            self.intake.stopRoll()
           
         self.drivetrain.arcadeDrive(
-          self.driver_joystick.getLeftXAxis(),
-          self.driver_joystick.getRightXAxis()
+          -self.driver_joystick.getRawAxis(1),
+          self.driver_joystick.getRawAxis(0)
         )
+
+        '''
+        self.isIntakeEnabled = False
+
+          if self.joystick.getRawButtonPressed(1):
+        self.isIntakeEnabled = not self.isIntakeEnabled  
+
+        if self.isIntakeEnabled:
+            self.intake.suckBalls()
+            print("sucking balls")
+        else:
+            if self.joystick.getRawButton(4):
+            self.intake.dropBalls()
+            print("drop balls")
+            else:
+            self.intake.stopRoll()
+            print("stop roll")
+
+        if self.joystick.getRawButton(2):
+            print("arm down")
+            self.intake.turnDown()
+        elif self.joystick.getRawButton(3):
+            self.intake.turnUp()
+            print("arm up")
+        else:
+            self.intake.stopArm()
+            print("arm stopped")
+        '''

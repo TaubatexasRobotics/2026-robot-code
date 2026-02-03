@@ -46,4 +46,4 @@ kLEDUSBPort = SerialPort.Port.kUSB1
 
 # Intake
 kIntakeAngleMotor = 53
-kIntakeTrackMotor = 1
+kIntakeTrackMotor = 12
