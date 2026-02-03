@@ -16,7 +16,10 @@ class Intake:
         self.arm_motor.set(0.7)    
 
     def suckBalls(self):    
-        self.roll_motor.set(0.8)
+        self.roll_motor.set(-1)
 
     def stopRoll(self):
         self.roll_motor.set(0)    
+
+    def dropBalls(self):
+        self.roll_motor.set(1)

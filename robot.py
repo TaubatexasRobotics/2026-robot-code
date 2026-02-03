@@ -6,26 +6,35 @@ class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
         self.intake = Intake()
         self.joystick = wpilib.Joystick(0)
+        self.isIntakeEnabled = False
     
     def teleopInit(self):
        pass
 
     def teleopPeriodic(self):
-      isEnabled = False
       if self.joystick.getRawButtonPressed(1):
-        isEnabled = not isEnabled  
+        self.isIntakeEnabled = not self.isIntakeEnabled  
 
-      if isEnabled:
+      if self.isIntakeEnabled:
         self.intake.suckBalls()
+        print("sucking balls")
       else:
-        self.intake.stopRoll()
+        if self.joystick.getRawButton(4):
+           self.intake.dropBalls()
+           print("drop balls")
+        else:
+          self.intake.stopRoll()
+          print("stop roll")
 
       if self.joystick.getRawButton(2):
+         print("arm down")
          self.intake.turnDown()
       elif self.joystick.getRawButton(3):
-         self.intake.turnUp
+         self.intake.turnUp()
+         print("arm up")
       else:
-         self.intake.stopArm
+         self.intake.stopArm()
+         print("arm stopped")
 
       
 
