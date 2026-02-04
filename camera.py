@@ -7,7 +7,7 @@ import math
 
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 
-class AprilTagCamera:
+class PhotonVisionCamera:
     def __init__(self, camera: str) -> None:
         self.camera = PhotonCamera(camera)
 

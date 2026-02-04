@@ -1,11 +1,12 @@
 from wpilib import TimedRobot
-from drivetrain import Drivetrain
-from camera import AprilTagCamera
+from limelight_camera import LimeLightCamera
 
 class Robot(TimedRobot):
     def robotInit(self) -> None:
-        self.drivetrain = Drivetrain()
-    
+        self.camera = LimeLightCamera()
+
+    def robotPeriodic(self) -> None:
+        self.camera.logging()
+
     def teleopPeriodic(self) -> None:
-        self.drivetrain.arcadeDriveAimAndRange(3)
-        self.drivetrain.distance
+        pass
