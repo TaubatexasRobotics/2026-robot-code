@@ -45,21 +45,21 @@ class MyRobot(wpilib.TimedRobot):
                 self.intake.stopArm()
                 print("arm stopped")
 
-            if self.joystick.getRawButton(2):
-                self.turret.shooterSpeed(.8)
-            else:
-                self.turret.shooterSpeed(0)
+            # if self.joystick.getRawButton(2):
+            #     self.turret.shooterSpeed(.8)
+            # else:
+            #     self.turret.shooterSpeed(0)
                 
-            if -0.1 > self.joystick.getRawAxis(4) < 0.1:
-                self.turret.yaw(0)
-            else:
-                self.turret.yaw(self.joystick.getRawAxis(4))
+            # if -0.1 > self.joystick.getRawAxis(4) < 0.1:
+            #     self.turret.yaw(0)
+            # else:
+            #     self.turret.yaw(self.joystick.getRawAxis(4))
         except BaseException as e:
             log_exception(e)
 
-        try:        
+        try:
             self.drivetrain.arcadeDrive(
-                -self.joystick.getRawAxis(1),
+                self.joystick.getRawAxis(1),
                 self.joystick.getRawAxis(0)
             )
         except BaseException as e:
