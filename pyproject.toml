@@ -29,5 +29,5 @@ requires = [
     "photonlibpy", 
     "robotpy-ctre",
     "robotpy-pykit",
-    "robotpy-pathplannerlib",
+    "limelightlib-python"
 ]
