@@ -1,7 +1,7 @@
 import constants
 from commands2 import Subsystem
 from typing import Optional
-from camera import AprilTagCamera
+from camera import PhotonVisionCamera
 from wpilib import MotorControllerGroup, DriverStation
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
@@ -15,7 +15,7 @@ from wpimath.units import inchesToMeters
 from rev import SparkMax, SparkLowLevel, SparkMaxConfig, FeedbackSensor, ResetMode, PersistMode
 
 class Drivetrain(Subsystem):
-    def __init__(self, camera: AprilTagCamera) -> None:
+    def __init__(self, camera: PhotonVisionCamera) -> None:
         self.left_front_motor = SparkMax(constants.kLeftFrontId, SparkLowLevel.MotorType.kBrushless)
         self.left_back_motor = SparkMax(constants.kLeftBackId, SparkLowLevel.MotorType.kBrushless)
         self.right_front_motor = SparkMax(constants.kRightFrontId, SparkLowLevel.MotorType.kBrushless)

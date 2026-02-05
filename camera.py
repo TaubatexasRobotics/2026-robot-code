@@ -3,10 +3,11 @@ import wpimath.units
 import constants
 from typing import Optional, Tuple
 from utils import Utils
+import math
 
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 
-class AprilTagCamera(PhotonCamera):
+class PhotonVisionCamera:
     def __init__(self, camera: str) -> None:
         self.camera = PhotonCamera(camera)
 

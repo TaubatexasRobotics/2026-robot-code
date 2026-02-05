@@ -2,11 +2,11 @@ import wpilib
 import rev
 import phoenix6
 import wpimath.controller
-from camera import AprilTagCamera
+from camera import PhotonVisionCamera
 
 
 class Turret:
-    def __init__(self, camera: AprilTagCamera):
+    def __init__(self, camera: PhotonVisionCamera):
         self.shooter1 = rev.SparkMax(1, rev.SparkLowLevel.MotorType.kBrushless)
         self.shooter2 = rev.SparkMax(2, rev.SparkLowLevel.MotorType.kBrushless)
         self.kraken = phoenix6.hardware.TalonFX(20)

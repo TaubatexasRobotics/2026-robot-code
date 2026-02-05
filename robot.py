@@ -1,16 +1,18 @@
 from drivetrain import Drivetrain
-from camera import AprilTagCamera
+from camera import PhotonVisionCamera
 from turret import Turret
 from genericjoystick import GenericJoystick
 from wpilib import TimedRobot, Joystick
 from intake import Intake
 import constants
+from limelight_camera import LimeLightCamera
 
 class Robot(TimedRobot):
     def robotInit(self) -> None:
-        self.camera = AprilTagCamera(constants.kCameraName)
+        self.camera = PhotonVisionCamera(constants.kCameraName)
         self.drivetrain = Drivetrain(self.camera)
         self.intake = Intake()
+        self.limelight = LimeLightCamera()
 
         self.driver_joystick = GenericJoystick(constants.kJoystickDriverPort)
         #self.codriver_joystick = GenericJoystick(constants.kJoystickCoDriverPort)
@@ -18,6 +20,7 @@ class Robot(TimedRobot):
 
     def robotPeriodic(self) -> None:
         self.drivetrain.updateOdometry()
+        self.limelight.logging()
 
     def teleopPeriodic(self) -> None:
         if self.driver_joystick.getA():
