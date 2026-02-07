@@ -2,25 +2,30 @@ from drivetrain import Drivetrain
 from camera import PhotonVisionCamera
 from turret import Turret
 from genericjoystick import GenericJoystick
-from wpilib import TimedRobot, Joystick
+from wpilib import TimedRobot, Joystick, SmartDashboard
 from intake import Intake
 import constants
-from limelight_camera import LimeLightCamera
+from limelightcamera import LimelightCamera
+from shooter import Shooter
 
 class Robot(TimedRobot):
     def robotInit(self) -> None:
         self.camera = PhotonVisionCamera(constants.kCameraName)
         self.drivetrain = Drivetrain(self.camera)
         self.intake = Intake()
-        self.limelight = LimeLightCamera()
+        self.shooter = Shooter(0, 0.1, 0, 100)
 
         self.driver_joystick = GenericJoystick(constants.kJoystickDriverPort)
-        #self.codriver_joystick = GenericJoystick(constants.kJoystickCoDriverPort)
-        self.is_intake_enabled = False
+
+        SmartDashboard.putNumber("kS", 0.1)
 
     def robotPeriodic(self) -> None:
         self.drivetrain.updateOdometry()
-        self.limelight.logging()
+        self.shooter.setFeedforwardConstraints(
+            SmartDashboard.getNumber("kS", 0),
+            0,
+            0
+        )
 
     def teleopPeriodic(self) -> None:
         if self.driver_joystick.getA():
@@ -34,17 +39,3 @@ class Robot(TimedRobot):
           self.driver_joystick.getLeftYAxis(),
           self.driver_joystick.getRightXAxis()
         )
-        
-        if self.driver_joystick.getX():
-            self.is_intake_enabled = not self.is_intake_enabled  
-
-        if self.is_intake_enabled:
-            self.intake.suckBalls()
-            #print("sucking balls")
-        else:
-            if self.driver_joystick.getY():
-                self.intake.dropBalls()
-                #print("drop balls")
-            else:
-                self.intake.stopRoll()
-                #print("stop roll")

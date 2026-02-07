@@ -8,15 +8,16 @@ class Intake:
         self.roll_motor = WPI_VictorSPX(constants.kIntakeTrackMotor)
 
         self.encoder = self.arm_motor.getEncoder()
+        self.alt_encoder = self.arm_motor.getAlternateEncoder()
 
     def turnDown(self):
-        self.arm_motor.set(-0.7)
+        self.arm_motor.set(1)
 
     def stopArm(self):
-        self.arm_motor.set(0)   
+        self.arm_motor.set(0)  
 
     def turnUp(self):
-        self.arm_motor.set(0.7)    
+        self.arm_motor.set(1)    
 
     def suckBalls(self):    
         self.roll_motor.set(-1)
