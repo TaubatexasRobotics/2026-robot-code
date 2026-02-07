@@ -3,14 +3,16 @@ import limelightresults
 import json
 import time
 
-class LimeLightCamera:
-    def logging(self):
+class LimelightCamera:
+    def __init__(self, address) -> None:
         discovered_limelights = limelight.discover_limelights(debug=True)
         print("discovered limelights:", discovered_limelights)
-
         if discovered_limelights:
             limelight_address = discovered_limelights[0] 
-        ll = limelight.Limelight(limelight_address)
+            self.ll = limelight.Limelight(limelight_address)
+
+    def logging(self):
+        
         results = ll.get_results()
         status = ll.get_status()
         print("-----")
@@ -27,7 +29,7 @@ class LimeLightCamera:
         print("hwreport:", ll.hw_report())
 
         ll.enable_websocket()
-   
+
         # print the current pipeline settings
         print(ll.get_pipeline_atindex(0))
 
