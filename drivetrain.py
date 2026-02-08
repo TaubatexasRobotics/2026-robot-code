@@ -23,7 +23,7 @@ class Drivetrain(Subsystem):
         self.right_motors.setInverted(constants.kRightMotorsInverted)
         self.drivetrain = DifferentialDrive(self.left_motors, self.right_motors)
 
-        config = SparkMaxConfig(*constants.kDrivetrainPID)
+        config = SparkMaxConfig()
 
         config.smartCurrentLimit(constants.kDrivetrainSmartCurrentLimit)
         config.setIdleMode(constants.kDrivetrainIdleMode)

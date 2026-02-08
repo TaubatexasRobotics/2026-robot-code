@@ -2,10 +2,9 @@ from drivetrain import Drivetrain
 from photonvisioncamera import PhotonVisionCamera
 from turret import Turret
 from genericjoystick import GenericJoystick
-from wpilib import TimedRobot, Joystick, SmartDashboard
+from wpilib import TimedRobot, SmartDashboard
 from intake import Intake
 import constants
-from limelightcamera import LimelightCamera
 from shooter import Shooter
 
 class Robot(TimedRobot):
@@ -20,7 +19,7 @@ class Robot(TimedRobot):
         SmartDashboard.putNumber("kS", 0.1)
 
     def robotPeriodic(self) -> None:
-        self.drivetrain.updateOdometry()
+        self.drivetrain.periodic()
         self.shooter.setFeedforwardConstraints(
             SmartDashboard.getNumber("kS", 0),
             0,
