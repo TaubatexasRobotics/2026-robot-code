@@ -1,6 +1,7 @@
 from math import pi
 from wpilib import SerialPort
-from pathplannerlib.config import RobotConfig, ModuleConfig
+from wpimath.kinematics import DifferentialDriveKinematics
+from rev import SparkLowLevel, SparkBaseConfig
 
 # Joystick
 kJoystickDriverPort = 0
@@ -9,12 +10,15 @@ kRealXboxController = "Controller (XBOX 360 For Windows)"
 kSimXboxController = "Xbox Controller"
 kGenericPS4Controller = "Wire PS4 Controller"
 
-# Drivetrain
+# Drivetrain Motor Controllers
 kLeftFrontId = 50
 kLeftBackId = 52
 kRightFrontId = 55
 kRightBackId = 54
-kSparkMaxSmartCurrentLimit = 40
+kDrivetrainSmartCurrentLimit = 40
+kDrivetrainMotorType = SparkLowLevel.MotorType.kBrushless
+kDrivetrainIdleMode = SparkBaseConfig.IdleMode.kBrake
+kDrivetrainPID = (0.1, 0, 0)
 
 # PhotonVision
 kCameraName = "Camera7459"
@@ -27,17 +31,27 @@ kGoalRangeMeters = 1
 kInitialPose = (0, 0, 0)
 
 # Drivetrain Kinematics
-kTrackWidthInMeters = 0.5
-
-# Drivetrain PID Controller
-kPIDAngularDrivetrain = (0.1, 0, 0)
-kPIDForwardDrivetrain = (0.1, 0, 0)
+kTrackWidthMeters = 0.5
+kDriveKinematics = DifferentialDriveKinematics(kTrackWidthMeters)
+kMaxVelocityMetersPerSecond = 3
+kMaxAccelerationMetersPerSecondSquared = 1
 
 # Drivetrain Encoders
-kLeftEncoder = (1, 2)
-kRightEncoder = (3, 4, True)
+kLeftMotorsInverted = False
+kRightMotorsInverted = True
 kWheelDiameter = 0.152 # HiGrip
 kGearReduction = 10.7 # Toughbox Mini
+kRotationsToMeters = (kWheelDiameter * pi) / kGearReduction
+kRotationsPerMinuteToMetersPerSecond = kRotationsToMeters / 60
+
+# Drivetrain Feedforward
+ksVolts = 0.22
+kvVoltSecondsPerMeter = 1.98
+kaVoltSecondsSquaredPerMeter = 0.2
+
+# Reasonable baseline values for a RAMSETE follower in units of meters and seconds.
+kRamseteB = 2
+kRamseteZeta = 0.7
 
 # Arduino
 kBaudRate = 9600

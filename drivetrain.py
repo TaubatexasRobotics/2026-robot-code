@@ -6,44 +6,43 @@ from wpilib import MotorControllerGroup, DriverStation
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController
-from wpimath.kinematics import DifferentialDriveOdometry, DifferentialDriveKinematics
+from wpimath.kinematics import DifferentialDriveOdometry, DifferentialDriveWheelSpeeds
 from wpimath.geometry import Pose2d, Rotation2d
-from pathplannerlib.config import RobotConfig
-from pathplannerlib.auto import AutoBuilder
-from pathplannerlib.controller import PPLTVController
-from wpimath.units import inchesToMeters
-from rev import SparkMax, SparkLowLevel, SparkMaxConfig, FeedbackSensor, ResetMode, PersistMode
+from rev import SparkMax, SparkMaxConfig, ResetMode, PersistMode
 
 class Drivetrain(Subsystem):
     def __init__(self, camera: PhotonVisionCamera) -> None:
-        self.left_front_motor = SparkMax(constants.kLeftFrontId, SparkLowLevel.MotorType.kBrushless)
-        self.left_back_motor = SparkMax(constants.kLeftBackId, SparkLowLevel.MotorType.kBrushless)
-        self.right_front_motor = SparkMax(constants.kRightFrontId, SparkLowLevel.MotorType.kBrushless)
-        self.right_back_motor = SparkMax(constants.kRightBackId, SparkLowLevel.MotorType.kBrushless)
+        self.left_front_motor = SparkMax(constants.kLeftFrontId, constants.kDrivetrainMotorType)
+        self.left_back_motor = SparkMax(constants.kLeftBackId, constants.kDrivetrainMotorType)
+        self.right_front_motor = SparkMax(constants.kRightFrontId, constants.kDrivetrainMotorType)
+        self.right_back_motor = SparkMax(constants.kRightBackId, constants.kDrivetrainMotorType)
 
         self.left_motors = MotorControllerGroup(self.left_front_motor, self.left_back_motor)
         self.right_motors = MotorControllerGroup(self.right_front_motor, self.right_back_motor)
-        self.right_motors.setInverted(True)
+        self.left_motors.setInverted(constants.kLeftMotorsInverted)
+        self.right_motors.setInverted(constants.kRightMotorsInverted)
         self.drivetrain = DifferentialDrive(self.left_motors, self.right_motors)
 
-        config = SparkMaxConfig()
-        
-        config.closedLoop.setFeedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        #config.closedLoop.pid(0.00005, 0, 0)
-        #config.closedLoop.velocityFF(0.15)
-        config.smartCurrentLimit(constants.kSparkMaxSmartCurrentLimit)
+        config = SparkMaxConfig(*constants.kDrivetrainPID)
 
-        #config.encoder.positionConversionFactor(constants.kWheelCircunference / constants.kGearReduction)
+        config.smartCurrentLimit(constants.kDrivetrainSmartCurrentLimit)
+        config.setIdleMode(constants.kDrivetrainIdleMode)
+        config.closedLoop.pid(*constants.kDrivetrainPID)
+        config.closedLoop.velocityFF(constants.kvVoltSecondsPerMeter)
+        config.closedLoop.maxMotion.maxAcceleration(constants.kMaxAccelerationMetersPerSecondSquared)
+        config.closedLoop.maxMotion.maxVelocity(constants.kMaxVelocityMetersPerSecond)
+
+        config.encoder.positionConversionFactor(constants.kRotationsToMeters)
+        config.encoder.velocityConversionFactor(constants.kRotationsPerMinuteToMetersPerSecond)
+        config.inverted(constants.kLeftMotorsInverted)
 
         self.left_front_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
         self.left_back_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+        
+        config.inverted(constants.kRightMotorsInverted)
+        
         self.right_front_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
         self.right_back_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-
-        self.rightClosedLoop = self.right_front_motor.getClosedLoopController()
-        self.right2ClosedLoop = self.right_back_motor.getClosedLoopController()
-        self.leftClosedLoop = self.left_front_motor.getClosedLoopController()
-        self.left2ClosedLoop = self.left_back_motor.getClosedLoopController()
 
         self.left_encoder = self.left_front_motor.getEncoder()
         self.right_encoder = self.right_front_motor.getEncoder()
@@ -54,8 +53,8 @@ class Drivetrain(Subsystem):
         self.navx = AHRS.create_spi()
         self.navx.reset()
 
-        self.pid_angular = PIDController(*constants.kPIDAngularDrivetrain)
-        self.pid_forward = PIDController(*constants.kPIDForwardDrivetrain)
+        self.pid_angular = PIDController(*constants.kDrivetrainPID)
+        self.pid_forward = PIDController(*constants.kDrivetrainPID)
 
         rotation = Rotation2d.fromDegrees(self.navx.getAngle())
 
@@ -68,58 +67,38 @@ class Drivetrain(Subsystem):
             self.pose
         )
 
-        self.kinematics = DifferentialDriveKinematics(
-            constants.kTrackWidthInMeters
-        )
-
-        pathConfig = RobotConfig.fromGUISettings()
-
-        AutoBuilder.configure (
-            self.odometry.getPose,
-            self.resetPose,
-            self.getRobotRelativeSpeeds,
-            lambda speeds, feedforwards: self.driveRobotRelative(speeds),
-            PPLTVController(0.02),
-            pathConfig,
-            self.shouldFlipPath,
-            self
-        )
-
         self.camera = camera
 
-    def shouldFlipPath():
+    def resetEncoders(self) -> None:
+        self.left_encoder.setPosition(0)
+        self.right_encoder.setPosition(0)
+
+    def shouldFlipPath(self) -> None:
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
     def resetPose(self, pose: Pose2d) -> None:
         self.odometry.resetPosition(
             Rotation2d.fromDegrees(self.navx.getAngle()),
-            self.left_encoder.getPosition,
+            self.left_encoder.getPosition(),
             self.right_encoder.getPosition(),
             pose
         )
+    
+    def getPose(self) -> Pose2d:
+        return self.odometry.getPose()
 
-    def driveRobotRelative(self, chassiSpeed):
-        wheelSpeeds = self.kinematics.toWheelSpeeds(chassiSpeed)
-        
-        leftRpm = (wheelSpeeds.left / constants.kWheelCircunference) * 60
-        rightRpm = (wheelSpeeds.right / constants.kWheelCircunference) * 60
-
-        leftMotorRpm = leftRpm * constants.kGearReduction
-        rightMotorRpm = rightRpm * constants.kGearReduction
-
-        self.leftClosedLoop.setReference(leftMotorRpm, rev.SparkBase.ControlType.kVelocity)
-        self.left2ClosedLoop.setReference(leftMotorRpm, rev.SparkBase.ControlType.kVelocity)
-        self.rightClosedLoop.setReference(rightMotorRpm, rev.SparkBase.ControlType.kVelocity)
-        self.right2ClosedLoop.setReference(rightMotorRpm, rev.SparkBase.ControlType.kVelocity)
-
-    def getRobotRelativeSpeeds(self) -> ChassisSpeeds:
-        wheelSpeeds = DifferentialDriveWheelSpeeds(
+    def tankDriveVolts(self, left_volts: float, right_volts: float) -> None:
+        """Controls the left and right sides of the drive directly with voltages."""
+        self.left_motors.setVoltage(left_volts)
+        self.right_motors.setVoltage(right_volts)
+        self.drivetrain.feed()
+    
+    def getWheelSpeeds(self) -> None:
+        return DifferentialDriveWheelSpeeds(
             self.left_encoder.getVelocity(),
             self.right_encoder.getVelocity()
         )
 
-        return self.kinematics.toChassisSpeeds(wheelSpeeds)
-    
     def front(self) -> None:
         self.drivetrain.arcadeDrive(1, 0)
 
@@ -129,10 +108,13 @@ class Drivetrain(Subsystem):
     def arcadeDrive(self, speed: float, rotate: float) -> None:
         self.drivetrain.arcadeDrive(speed, rotate)
 
+    def cheesyDrive(self, speed: float, rotate: float) -> None:
+        self.drivetrain.curvatureDrive(speed, rotate)
+
     def tankDrive(self, left_speed: float, right_speed: float) -> None:
         self.drivetrain.tankDrive(left_speed, right_speed)
 
-    def updateOdometry(self):
+    def periodic(self) -> None:
         self.odometry.update(
             Rotation2d.fromDegrees(self.navx.getAngle()),
             self.left_encoder.getPosition(),
@@ -150,31 +132,6 @@ class Drivetrain(Subsystem):
         rotation = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(range, rotation)
     
-    def turnToDegrees(self, setpoint: Optional[int]) -> None:
+    def zRotationFromDegrees(self, setpoint: Optional[float]) -> None:
+        self.pid_angular.setSetpoint(setpoint)
         self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), self.pid_angular.getSetpoint()))
-
-    def turnTo90DegreesPositive(self, setpoint: Optional[int]) -> None:
-        if (self.navx.getYaw > 90):
-            setpoint = self.navx.getYaw - (270) / 360
-        else:
-            setpoint = self.navx.getYaw + 90 / 360        
-
-        self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), setpoint))
-
-    def turnTo90DegreesNegative(self, setpoint: Optional[int]) -> None:
-        if (self.navx.getYaw < -90):
-            setpoint = self.navx.getYaw + 270 / 360
-        else:
-            setpoint = self.navx.getYaw - 90          
-
-        self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), -setpoint))
-
-    def turnTo180Degrees(self, setpoint: Optional[int]) -> None:
-        setpoint = 180 / 360
-
-        if (self.navx.getYaw > 0):
-            setpoint = self.navx.getYaw - (180 / 360)
-        else:
-            setpoint = self.navx.getYaw + (180 / 360)
-
-        self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), setpoint))
