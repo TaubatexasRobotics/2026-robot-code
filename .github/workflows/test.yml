@@ -37,7 +37,7 @@ jobs:
         python-version: ${{ matrix.python_version }}
     - name: Install deps
       run: |
-        pip install 'robotpy[commands2,navx,pykit,pathplannerlib,ctre,rev]<2027,>=2026.1.1' numpy pytest photonlibpy
+        pip install 'robotpy[commands2,navx,pykit,pathplannerlib,ctre,rev]<2027,>=2026.1.1' numpy pytest photonlibpy limelightlib-python
     - name: Run tests
       run: bash run_tests.sh
       shell: bash

@@ -26,7 +26,7 @@ requires = [
     "robotpy-pathplannerlib",
     "robotpy-navx",
     "robotpy-rev",
-    "photonlibpy", 
+    "photonlibpy",
     "robotpy-ctre",
     "robotpy-pykit",
     "limelightlib-python"
