@@ -2,7 +2,7 @@ import wpilib
 import rev
 import phoenix6
 import wpimath.controller
-from camera import PhotonVisionCamera
+from photonvisioncamera import PhotonVisionCamera
 
 
 class Turret:

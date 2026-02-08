@@ -1,5 +1,5 @@
 from drivetrain import Drivetrain
-from camera import PhotonVisionCamera
+from photonvisioncamera import PhotonVisionCamera
 from turret import Turret
 from genericjoystick import GenericJoystick
 from wpilib import TimedRobot, Joystick, SmartDashboard

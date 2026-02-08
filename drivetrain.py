@@ -1,7 +1,7 @@
 import constants
 from commands2 import Subsystem
 from typing import Optional
-from camera import PhotonVisionCamera
+from photonvisioncamera import PhotonVisionCamera
 from wpilib import MotorControllerGroup, DriverStation
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
