@@ -1,9 +1,6 @@
 import constants
 from commands2 import Command
-from wpimath.controller import (
-    LTVUnicycleController,
-    SimpleMotorFeedforwardMeters,
-)
+from wpimath.controller import LTVUnicycleController, SimpleMotorFeedforwardMeters
 from drivetrain import Drivetrain
 from wpimath.trajectory.constraint import DifferentialDriveVoltageConstraint
 from wpimath.trajectory import TrajectoryConfig, TrajectoryGenerator

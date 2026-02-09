@@ -3,7 +3,6 @@ import wpimath.units
 import constants
 from typing import Optional, Tuple
 from utils import Utils
-import math
 
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 
