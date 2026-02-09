@@ -32,7 +32,7 @@ kInitialPose = (0, 0, 0)
 
 # Drivetrain Kinematics
 kTrackWidthMeters = 0.5
-kDriveKinematics = DifferentialDriveKinematics(kTrackWidthMeters)
+kDrivetrainKinematics = DifferentialDriveKinematics(kTrackWidthMeters)
 kMaxVelocityMetersPerSecond = 3
 kMaxAccelerationMetersPerSecondSquared = 1
 

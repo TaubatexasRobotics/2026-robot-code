@@ -2,7 +2,7 @@ import constants
 from commands2 import Subsystem
 from typing import Optional
 from photonvisioncamera import PhotonVisionCamera
-from wpilib import MotorControllerGroup, DriverStation
+from wpilib import DriverStation
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController
@@ -17,11 +17,7 @@ class Drivetrain(Subsystem):
         self.right_front_motor = SparkMax(constants.kRightFrontId, constants.kDrivetrainMotorType)
         self.right_back_motor = SparkMax(constants.kRightBackId, constants.kDrivetrainMotorType)
 
-        self.left_motors = MotorControllerGroup(self.left_front_motor, self.left_back_motor)
-        self.right_motors = MotorControllerGroup(self.right_front_motor, self.right_back_motor)
-        self.left_motors.setInverted(constants.kLeftMotorsInverted)
-        self.right_motors.setInverted(constants.kRightMotorsInverted)
-        self.drivetrain = DifferentialDrive(self.left_motors, self.right_motors)
+        self.drivetrain = DifferentialDrive(self.left_front_motor, self.right_front_motor)
 
         config = SparkMaxConfig()
 
@@ -37,15 +33,24 @@ class Drivetrain(Subsystem):
         config.inverted(constants.kLeftMotorsInverted)
 
         self.left_front_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-        self.left_back_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
         
+        config.follow(constants.kLeftFrontId)
+        self.left_back_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+
+        config.disableFollowerMode()
         config.inverted(constants.kRightMotorsInverted)
         
         self.right_front_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+        config.follow(constants.kRightFrontId)
         self.right_back_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+        
+        config.disableFollowerMode()
 
         self.left_encoder = self.left_front_motor.getEncoder()
         self.right_encoder = self.right_front_motor.getEncoder()
+
+        self.left_closed_loop = self.left_front_motor.getClosedLoopController()
+        self.right_closed_loop = self.right_front_motor.getClosedLoopController()
 
         self.left_encoder.setPosition(0)
         self.right_encoder.setPosition(0)
@@ -69,6 +74,9 @@ class Drivetrain(Subsystem):
 
         self.camera = camera
 
+    def stop(self) -> None:
+        self.drivetrain.arcadeDrive(0, 0)
+
     def resetEncoders(self) -> None:
         self.left_encoder.setPosition(0)
         self.right_encoder.setPosition(0)
@@ -88,12 +96,11 @@ class Drivetrain(Subsystem):
         return self.odometry.getPose()
 
     def tankDriveVolts(self, left_volts: float, right_volts: float) -> None:
-        """Controls the left and right sides of the drive directly with voltages."""
-        self.left_motors.setVoltage(left_volts)
-        self.right_motors.setVoltage(right_volts)
+        self.left_front_motor.setVoltage(left_volts)
+        self.right_front_motor.setVoltage(right_volts)
         self.drivetrain.feed()
     
-    def getWheelSpeeds(self) -> None:
+    def getWheelSpeeds(self) -> DifferentialDriveWheelSpeeds:
         return DifferentialDriveWheelSpeeds(
             self.left_encoder.getVelocity(),
             self.right_encoder.getVelocity()
