@@ -1,7 +1,7 @@
 import constants
 from commands2 import Subsystem
 from typing import Optional
-from photonvisioncamera import PhotonVisionCamera
+from camera import Camera
 from wpilib import DriverStation, Field2d, SmartDashboard
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
@@ -189,12 +189,12 @@ class Drivetrain(Subsystem):
             self.right_encoder.getPosition(),
         )
 
-    def arcadeDriveAlign(self, camera: PhotonVisionCamera, tag: int) -> None:
+    def arcadeDriveAlign(self, camera: Camera, tag: int) -> None:
         yaw = camera.getYaw(tag)
         turn = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(0, turn)
 
-    def arcadeDriveAimAndRange(self, camera: PhotonVisionCamera, tag: int) -> None:
+    def arcadeDriveAimAndRange(self, camera: Camera, tag: int) -> None:
         yaw, range = camera.getYawWithRange(tag)
         range = (
             self.pid_forward.calculate(range, constants.kGoalRangeMeters)

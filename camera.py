@@ -1,13 +1,24 @@
-from photonlibpy import PhotonCamera
-import wpimath.units
 import constants
+from photonlibpy import PhotonCamera
 from typing import Optional, Tuple
 from utils import Utils
-
+from abc import ABC, abstractmethod
+from limelight import Limelight
+from limelightresults import parse_results
+from wpinet import PortForwarder
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
+from wpimath.units import degreesToRadians
 
+class Camera(ABC):
+    @abstractmethod
+    def getYawFromTag(self, tag: int) -> float:
+        pass
 
-class PhotonVisionCamera:
+    @abstractmethod
+    def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
+        pass
+
+class PhotonVisionCamera(Camera):
     def __init__(self, camera: str) -> None:
         self.camera = PhotonCamera(camera)
 
@@ -18,7 +29,7 @@ class PhotonVisionCamera:
             return target
         return None
 
-    def getYaw(self, tag: int) -> float:
+    def getYawFromTag(self, tag: int) -> float:
         results = self.camera.getAllUnreadResults()
         if len(results) > 0:
             result = results[-1]
@@ -27,7 +38,7 @@ class PhotonVisionCamera:
                     return target.getYaw()
         return -1
 
-    def getYawWithRange(self, tag: int) -> Tuple[float, float]:
+    def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         results = self.camera.getAllUnreadResults()
         target_range = 0
         if len(results) > 0:
@@ -38,7 +49,21 @@ class PhotonVisionCamera:
                         constants.kCameraHeightMeters,
                         constants.kTargetHeightMeters,
                         constants.kCameraPitchRadians,
-                        wpimath.units.degreesToRadians(target.getPitch()),
+                        degreesToRadians(target.getPitch()),
                     )
                     return target.getYaw(), target_range
         return -1, -1
+
+class Limelight(Camera):
+    def __init__(self, camera: str) -> None:
+        self.limelight = Limelight(camera)
+        PortForwarder.getInstance().add(*constants.kLimelightPortForwarder)
+
+    def getYaw(self, tag: int) -> float:
+        self.limelight.pipeline_switch(0)
+        result = self.limelight.get_results()
+        parsed_result = parse_results(result)
+        return 0
+    
+    def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
+        return 0, 0

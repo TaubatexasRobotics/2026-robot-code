@@ -27,6 +27,9 @@ kTargetHeightMeters = 1.12
 kCameraPitchRadians = 0
 kGoalRangeMeters = 1
 
+# Limelight 3A
+kLimelightPortForwarder = (5801, "172.29.0.1", 5801) # port, remoteHost, remotePort
+
 # Drivetrain Odometry
 kInitialPose = (0, 0, 0)
 
