@@ -2,22 +2,38 @@ import constants
 from commands2 import Subsystem
 from typing import Optional
 from photonvisioncamera import PhotonVisionCamera
-from wpilib import DriverStation
+from wpilib import DriverStation, Field2d, SmartDashboard
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController, SimpleMotorFeedforwardMeters
 from wpimath.kinematics import DifferentialDriveOdometry, DifferentialDriveWheelSpeeds
 from wpimath.geometry import Pose2d, Rotation2d
 from rev import SparkMax, SparkMaxConfig, ResetMode, PersistMode, SparkLowLevel, ClosedLoopSlot
+from wpilib.simulation import DifferentialDrivetrainSim
+from wpimath.system.plant import LinearSystemId, DCMotor
 
 class Drivetrain(Subsystem):
-    def __init__(self, camera: PhotonVisionCamera) -> None:
+    def __init__(self) -> None:
         self.left_front_motor = SparkMax(constants.kLeftFrontId, constants.kDrivetrainMotorType)
         self.left_back_motor = SparkMax(constants.kLeftBackId, constants.kDrivetrainMotorType)
         self.right_front_motor = SparkMax(constants.kRightFrontId, constants.kDrivetrainMotorType)
         self.right_back_motor = SparkMax(constants.kRightBackId, constants.kDrivetrainMotorType)
 
         self.drivetrain = DifferentialDrive(self.left_front_motor, self.right_front_motor)
+        self.drivetrain.setSafetyEnabled(True)
+        self.field = Field2d()
+
+        """
+        self.drivetrain_system = LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3)
+        self.drivetrain_simulator = DifferentialDrivetrainSim(
+            self.drivetrain_system,
+            DCMotor.NEO(4),
+            8,
+            constants.kTrackWidth,
+            constants.kWheelDiameter / 2,
+            None
+        )
+        """
 
         config = SparkMaxConfig()
 
@@ -63,13 +79,11 @@ class Drivetrain(Subsystem):
 
         rotation = Rotation2d.fromDegrees(self.navx.getAngle())
 
-        self.pose = Pose2d(*constants.kInitialPose)
-
         self.odometry = DifferentialDriveOdometry(
             rotation, 
             self.left_encoder.getPosition(), 
             self.right_encoder.getPosition(), 
-            self.pose
+            Pose2d(*constants.kInitialPose)
         )
 
         self.feedforward = SimpleMotorFeedforwardMeters(
@@ -77,8 +91,6 @@ class Drivetrain(Subsystem):
             constants.kvVoltSecondsPerMeter,
             constants.kaVoltSecondsSquaredPerMeter,
         )
-
-        self.camera = camera
 
     def stop(self) -> None:
         self.drivetrain.arcadeDrive(0, 0)
@@ -124,10 +136,10 @@ class Drivetrain(Subsystem):
             self.right_encoder.getVelocity()
         )
 
-    def front(self) -> None:
+    def forward(self) -> None:
         self.drivetrain.arcadeDrive(1, 0)
 
-    def back(self) -> None:
+    def backward(self) -> None:
         self.drivetrain.arcadeDrive(-1, 0)
 
     def arcadeDrive(self, speed: float, rotate: float) -> None:
@@ -140,19 +152,21 @@ class Drivetrain(Subsystem):
         self.drivetrain.tankDrive(left_speed, right_speed)
 
     def periodic(self) -> None:
+        self.field.setRobotPose(self.odometry.getPose())
+        SmartDashboard.putData("Field", self.field)
         self.odometry.update(
             Rotation2d.fromDegrees(self.navx.getAngle()),
             self.left_encoder.getPosition(),
             self.right_encoder.getPosition(),
         )
 
-    def arcadeDriveAlign(self, tag: int) -> None:
-        yaw = self.camera.getYaw(tag)
+    def arcadeDriveAlign(self, camera: PhotonVisionCamera, tag: int) -> None:
+        yaw = camera.getYaw(tag)
         turn = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(0, turn)
     
-    def arcadeDriveAimAndRange(self, tag: int) -> None:
-        yaw, range = self.camera.getYawWithRange(tag)
+    def arcadeDriveAimAndRange(self, camera: PhotonVisionCamera, tag: int) -> None:
+        yaw, range = camera.getYawWithRange(tag)
         range = self.pid_forward.calculate(range, constants.kGoalRangeMeters) if yaw != -1 else 0
         rotation = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(range, rotation)
