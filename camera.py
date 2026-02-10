@@ -67,3 +67,9 @@ class Limelight(Camera):
     
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
+
+class Pixy2(Camera):
+    pass
+
+class DriverCamera(Camera):
+    pass

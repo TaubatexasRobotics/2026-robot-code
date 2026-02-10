@@ -2,9 +2,8 @@ import constants
 from commands2 import Command
 from wpimath.controller import LTVUnicycleController
 from drivetrain import Drivetrain
-from wpimath.trajectory.constraint import DifferentialDriveVoltageConstraint
 from wpimath.trajectory import TrajectoryConfig, TrajectoryGenerator
-from wpimath.geometry import Pose2d, Rotation2d, Translation2d
+from wpimath.geometry import Pose2d
 
 
 class BasicAuto(Command):
