@@ -1,6 +1,7 @@
 from math import tan
 from wpilib import SerialPort
 
+
 class Utils:
     @staticmethod
     def calculateDistanceToTargetMeters(

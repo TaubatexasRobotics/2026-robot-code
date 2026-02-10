@@ -39,8 +39,8 @@ kMaxAccelerationMetersPerSecondSquared = 1
 # Drivetrain Encoders
 kLeftMotorsInverted = False
 kRightMotorsInverted = True
-kWheelDiameter = 0.152 # HiGrip
-kGearReduction = 10.7 # Toughbox Mini
+kWheelDiameter = 0.152  # HiGrip
+kGearReduction = 10.7  # Toughbox Mini
 kRotationsToMeters = (kWheelDiameter * pi) / kGearReduction
 kRotationsPerMinuteToMetersPerSecond = kRotationsToMeters / 60
 

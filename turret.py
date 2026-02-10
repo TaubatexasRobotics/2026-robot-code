@@ -24,9 +24,9 @@ class Turret:
     def yawLeft(self):
         self.kraken.set(1)
 
-    def yawRight(self):    
+    def yawRight(self):
         self.kraken.set(-1)
-    
+
     def turnOffKraken(self):
         self.kraken.set(0)
 
@@ -34,8 +34,8 @@ class Turret:
         self.pitch.set(1)
 
     def pitchDown(self):
-        self.pitch.set(-1)    
-        
+        self.pitch.set(-1)
+
     def TurretAlign(self, tag: int) -> None:
         yaw = self.camera.getYaw(tag)
         turn = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0

@@ -1,6 +1,14 @@
-from rev import SparkMax, SparkLowLevel, ResetMode, PersistMode, SparkMaxConfig, SparkBaseConfig
+from rev import (
+    SparkMax,
+    SparkLowLevel,
+    ResetMode,
+    PersistMode,
+    SparkMaxConfig,
+    SparkBaseConfig,
+)
 from commands2 import Subsystem
 from wpilib import SmartDashboard
+
 
 class Shooter(Subsystem):
     def __init__(self, kS: int, kV: int, kA: int, setpoint: int) -> None:
@@ -15,25 +23,21 @@ class Shooter(Subsystem):
         config.closedLoop.feedForward.kS(kS)
         config.closedLoop.feedForward.kV(kV)
         config.closedLoop.feedForward.kA(kA)
-        
+
         self.motor.configure(
             config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters
         )
 
-        #self.controller = self.motor.getClosedLoopController()
-        #config.closedLoop.maxMotion.cruiseVelocity()
-        #config.closedLoop.maxAcceleration.cruiseVelocity()
-        #config.closedLoop.allowedProfileError.cruiseVelocity()
+        # self.controller = self.motor.getClosedLoopController()
+        # config.closedLoop.maxMotion.cruiseVelocity()
+        # config.closedLoop.maxAcceleration.cruiseVelocity()
+        # config.closedLoop.allowedProfileError.cruiseVelocity()
 
-        #self.motor.setSetpoint(setpoint, SparkLowLevel.ControlType.kMAXMotionVelocityControl)
+        # self.motor.setSetpoint(setpoint, SparkLowLevel.ControlType.kMAXMotionVelocityControl)
         SmartDashboard.putNumber("kS", 0.1)
-        
+
     def periodic(self) -> None:
-        self.setFeedforwardConstraints(
-            SmartDashboard.getNumber("kS", 0),
-            0,
-            0
-        )
+        self.setFeedforwardConstraints(SmartDashboard.getNumber("kS", 0), 0, 0)
 
     def setFeedforwardConstraints(self, kS: int, kV: int, kA: int) -> None:
         config = SparkMaxConfig()

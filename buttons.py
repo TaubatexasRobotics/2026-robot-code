@@ -24,11 +24,11 @@ dualshock4_map = {
     "left-y-stick": 1,
     "right-x-stick": 2,
     "right-y-stick": 5,
-    "left-trigger-axis": 3, 
-    "right-trigger-axis": 4 
+    "left-trigger-axis": 3,
+    "right-trigger-axis": 4,
 }
 
-#Generic dualshock4
+# Generic dualshock4
 
 g_ps4_controller = {
     "square": 4,
@@ -53,8 +53,8 @@ g_ps4_controller = {
     "left-y-stick": 1,
     "right-x-stick": 2,
     "right-y-stick": 3,
-    "left-trigger-axis": 2, 
-    "right-trigger-axis": 3 
+    "left-trigger-axis": 2,
+    "right-trigger-axis": 3,
 }
 
 # Generic Nintendo Switch Pro Controller
@@ -89,8 +89,8 @@ g_xbox_360_map = {
     "pov-right": 90,
     "left-x-stick": 0,
     "left-y-stick": 1,
-    "left-trigger-axis": 2, 
-    "right-trigger-axis": 3, 
+    "left-trigger-axis": 2,
+    "right-trigger-axis": 3,
     "right-y-stick": 5,
     "right-x-stick": 4,
 }
@@ -98,15 +98,15 @@ g_xbox_360_map = {
 # Generic steering wheel controller (generic Xbox 360 controller)
 steering_wheel = {
     "turn-axis": 0,
-    "a" : 3,
-    "b" : 2,
-    "y" : 1,
-    "x" : 4,
-    "lb" : 5,
-    "rb" : 6,
-    "rt" : 8,
-    "lt" : 7,
-    "r3" : 12,
-    "l3" : 11,
-    "back" : 9,
+    "a": 3,
+    "b": 2,
+    "y": 1,
+    "x": 4,
+    "lb": 5,
+    "rb": 6,
+    "rt": 8,
+    "lt": 7,
+    "r3": 12,
+    "l3": 11,
+    "back": 9,
 }

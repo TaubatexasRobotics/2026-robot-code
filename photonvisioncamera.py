@@ -6,6 +6,7 @@ from utils import Utils
 
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 
+
 class PhotonVisionCamera:
     def __init__(self, camera: str) -> None:
         self.camera = PhotonCamera(camera)
@@ -37,7 +38,7 @@ class PhotonVisionCamera:
                         constants.kCameraHeightMeters,
                         constants.kTargetHeightMeters,
                         constants.kCameraPitchRadians,
-                        wpimath.units.degreesToRadians(target.getPitch())
+                        wpimath.units.degreesToRadians(target.getPitch()),
                     )
                     return target.getYaw(), target_range
         return -1, -1

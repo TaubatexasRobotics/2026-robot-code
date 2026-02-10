@@ -8,18 +8,36 @@ from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController, SimpleMotorFeedforwardMeters
 from wpimath.kinematics import DifferentialDriveOdometry, DifferentialDriveWheelSpeeds
 from wpimath.geometry import Pose2d, Rotation2d
-from rev import SparkMax, SparkMaxConfig, ResetMode, PersistMode, SparkLowLevel, ClosedLoopSlot
+from rev import (
+    SparkMax,
+    SparkMaxConfig,
+    ResetMode,
+    PersistMode,
+    SparkLowLevel,
+    ClosedLoopSlot,
+)
 from wpilib.simulation import DifferentialDrivetrainSim
 from wpimath.system.plant import LinearSystemId, DCMotor
 
+
 class Drivetrain(Subsystem):
     def __init__(self) -> None:
-        self.left_front_motor = SparkMax(constants.kLeftFrontId, constants.kDrivetrainMotorType)
-        self.left_back_motor = SparkMax(constants.kLeftBackId, constants.kDrivetrainMotorType)
-        self.right_front_motor = SparkMax(constants.kRightFrontId, constants.kDrivetrainMotorType)
-        self.right_back_motor = SparkMax(constants.kRightBackId, constants.kDrivetrainMotorType)
+        self.left_front_motor = SparkMax(
+            constants.kLeftFrontId, constants.kDrivetrainMotorType
+        )
+        self.left_back_motor = SparkMax(
+            constants.kLeftBackId, constants.kDrivetrainMotorType
+        )
+        self.right_front_motor = SparkMax(
+            constants.kRightFrontId, constants.kDrivetrainMotorType
+        )
+        self.right_back_motor = SparkMax(
+            constants.kRightBackId, constants.kDrivetrainMotorType
+        )
 
-        self.drivetrain = DifferentialDrive(self.left_front_motor, self.right_front_motor)
+        self.drivetrain = DifferentialDrive(
+            self.left_front_motor, self.right_front_motor
+        )
         self.drivetrain.setSafetyEnabled(True)
         self.field = Field2d()
 
@@ -41,25 +59,37 @@ class Drivetrain(Subsystem):
         config.setIdleMode(constants.kDrivetrainIdleMode)
         config.closedLoop.pid(*constants.kDrivetrainPID)
         config.closedLoop.velocityFF(constants.kvVoltSecondsPerMeter)
-        config.closedLoop.maxMotion.maxAcceleration(constants.kMaxAccelerationMetersPerSecondSquared)
+        config.closedLoop.maxMotion.maxAcceleration(
+            constants.kMaxAccelerationMetersPerSecondSquared
+        )
         config.closedLoop.maxMotion.maxVelocity(constants.kMaxVelocityMetersPerSecond)
 
         config.encoder.positionConversionFactor(constants.kRotationsToMeters)
-        config.encoder.velocityConversionFactor(constants.kRotationsPerMinuteToMetersPerSecond)
+        config.encoder.velocityConversionFactor(
+            constants.kRotationsPerMinuteToMetersPerSecond
+        )
         config.inverted(constants.kLeftMotorsInverted)
 
-        self.left_front_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-        
+        self.left_front_motor.configure(
+            config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters
+        )
+
         config.follow(constants.kLeftFrontId)
-        self.left_back_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+        self.left_back_motor.configure(
+            config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters
+        )
 
         config.disableFollowerMode()
         config.inverted(constants.kRightMotorsInverted)
-        
-        self.right_front_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
+
+        self.right_front_motor.configure(
+            config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters
+        )
         config.follow(constants.kRightFrontId)
-        self.right_back_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters)
-        
+        self.right_back_motor.configure(
+            config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters
+        )
+
         config.disableFollowerMode()
 
         self.left_encoder = self.left_front_motor.getEncoder()
@@ -80,10 +110,10 @@ class Drivetrain(Subsystem):
         rotation = Rotation2d.fromDegrees(self.navx.getAngle())
 
         self.odometry = DifferentialDriveOdometry(
-            rotation, 
-            self.left_encoder.getPosition(), 
-            self.right_encoder.getPosition(), 
-            Pose2d(*constants.kInitialPose)
+            rotation,
+            self.left_encoder.getPosition(),
+            self.right_encoder.getPosition(),
+            Pose2d(*constants.kInitialPose),
         )
 
         self.feedforward = SimpleMotorFeedforwardMeters(
@@ -107,9 +137,9 @@ class Drivetrain(Subsystem):
             Rotation2d.fromDegrees(self.navx.getAngle()),
             self.left_encoder.getPosition(),
             self.right_encoder.getPosition(),
-            pose
+            pose,
         )
-    
+
     def getPose(self) -> Pose2d:
         return self.odometry.getPose()
 
@@ -118,22 +148,21 @@ class Drivetrain(Subsystem):
         right_feedforward = self.feedforward.calculate(speeds.right)
 
         self.left_closed_loop.setReference(
-            speeds.left, 
+            speeds.left,
             SparkLowLevel.ControlType.kVelocity,
             ClosedLoopSlot.kSlot0,
-            left_feedforward
+            left_feedforward,
         )
         self.right_closed_loop.setReference(
-            speeds.right, 
+            speeds.right,
             SparkLowLevel.ControlType.kVelocity,
             ClosedLoopSlot.kSlot0,
-            right_feedforward
+            right_feedforward,
         )
 
     def getWheelSpeeds(self) -> DifferentialDriveWheelSpeeds:
         return DifferentialDriveWheelSpeeds(
-            self.left_encoder.getVelocity(),
-            self.right_encoder.getVelocity()
+            self.left_encoder.getVelocity(), self.right_encoder.getVelocity()
         )
 
     def forward(self) -> None:
@@ -164,13 +193,22 @@ class Drivetrain(Subsystem):
         yaw = camera.getYaw(tag)
         turn = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(0, turn)
-    
+
     def arcadeDriveAimAndRange(self, camera: PhotonVisionCamera, tag: int) -> None:
         yaw, range = camera.getYawWithRange(tag)
-        range = self.pid_forward.calculate(range, constants.kGoalRangeMeters) if yaw != -1 else 0
+        range = (
+            self.pid_forward.calculate(range, constants.kGoalRangeMeters)
+            if yaw != -1
+            else 0
+        )
         rotation = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(range, rotation)
-    
+
     def zRotationFromDegrees(self, setpoint: Optional[float]) -> None:
         self.pid_angular.setSetpoint(setpoint)
-        self.drivetrain.arcadeDrive(0, self.pid_angular.calculate(self.navx.getAngle(), self.pid_angular.getSetpoint()))
+        self.drivetrain.arcadeDrive(
+            0,
+            self.pid_angular.calculate(
+                self.navx.getAngle(), self.pid_angular.getSetpoint()
+            ),
+        )
