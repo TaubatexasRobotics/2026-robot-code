@@ -1,6 +1,7 @@
-from phoenix6.hardware import TalonFX 
+from phoenix6.hardware import TalonFX
 from camera import Camera
 from wpimath.controller import PIDController
+
 
 class Turret:
     def __init__(self):

@@ -9,6 +9,7 @@ from wpinet import PortForwarder
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 from wpimath.units import degreesToRadians
 
+
 class Camera(ABC):
     @abstractmethod
     def getYawFromTag(self, tag: int) -> float:
@@ -17,6 +18,7 @@ class Camera(ABC):
     @abstractmethod
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         pass
+
 
 class PhotonVisionCamera(Camera):
     def __init__(self, camera: str) -> None:
@@ -54,6 +56,7 @@ class PhotonVisionCamera(Camera):
                     return target.getYaw(), target_range
         return -1, -1
 
+
 class Limelight(Camera):
     def __init__(self, camera: str) -> None:
         self.limelight = Limelight(camera)
@@ -64,12 +67,14 @@ class Limelight(Camera):
         result = self.limelight.get_results()
         parsed_result = parse_results(result)
         return 0
-    
+
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
 
+
 class Pixy2(Camera):
     pass
+
 
 class DriverCamera(Camera):
     pass
