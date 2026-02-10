@@ -1,3 +1,6 @@
+# Vim temporarily files
+*.swp
+
 # WPILib default config
 tests/
 .wpilib/

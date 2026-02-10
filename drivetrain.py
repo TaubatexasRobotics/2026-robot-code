@@ -5,10 +5,10 @@ from photonvisioncamera import PhotonVisionCamera
 from wpilib import DriverStation
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
-from wpimath.controller import PIDController
+from wpimath.controller import PIDController, SimpleMotorFeedforwardMeters
 from wpimath.kinematics import DifferentialDriveOdometry, DifferentialDriveWheelSpeeds
 from wpimath.geometry import Pose2d, Rotation2d
-from rev import SparkMax, SparkMaxConfig, ResetMode, PersistMode
+from rev import SparkMax, SparkMaxConfig, ResetMode, PersistMode, SparkLowLevel, ClosedLoopSlot
 
 class Drivetrain(Subsystem):
     def __init__(self, camera: PhotonVisionCamera) -> None:
@@ -72,6 +72,12 @@ class Drivetrain(Subsystem):
             self.pose
         )
 
+        self.feedforward = SimpleMotorFeedforwardMeters(
+            constants.ksVolts,
+            constants.kvVoltSecondsPerMeter,
+            constants.kaVoltSecondsSquaredPerMeter,
+        )
+
         self.camera = camera
 
     def stop(self) -> None:
@@ -95,11 +101,23 @@ class Drivetrain(Subsystem):
     def getPose(self) -> Pose2d:
         return self.odometry.getPose()
 
-    def tankDriveVolts(self, left_volts: float, right_volts: float) -> None:
-        self.left_front_motor.setVoltage(left_volts)
-        self.right_front_motor.setVoltage(right_volts)
-        self.drivetrain.feed()
-    
+    def setSpeeds(self, speeds: DifferentialDriveWheelSpeeds) -> None:
+        left_feedforward = self.feedforward.calculate(speeds.left)
+        right_feedforward = self.feedforward.calculate(speeds.right)
+
+        self.left_closed_loop.setReference(
+            speeds.left, 
+            SparkLowLevel.ControlType.kVelocity,
+            ClosedLoopSlot.kSlot0,
+            left_feedforward
+        )
+        self.right_closed_loop.setReference(
+            speeds.right, 
+            SparkLowLevel.ControlType.kVelocity,
+            ClosedLoopSlot.kSlot0,
+            right_feedforward
+        )
+
     def getWheelSpeeds(self) -> DifferentialDriveWheelSpeeds:
         return DifferentialDriveWheelSpeeds(
             self.left_encoder.getVelocity(),
