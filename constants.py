@@ -49,10 +49,6 @@ ksVolts = 0.22
 kvVoltSecondsPerMeter = 1.98
 kaVoltSecondsSquaredPerMeter = 0.2
 
-# Reasonable baseline values for a RAMSETE follower in units of meters and seconds.
-kRamseteB = 2
-kRamseteZeta = 0.7
-
 # Arduino
 kBaudRate = 9600
 
