@@ -24,5 +24,6 @@ components = [
 # is equivalent to a line in requirements.txt)
 requires = [	
     #"photonlibpy==2026.1.1"
-    "phoenix6==26.1.0"
+    "phoenix6==26.1.0",
+    "robotpy-rev"
 ]

@@ -1,19 +1,15 @@
 import wpilib
-import Turret
-
-class MyRobot (wpilib.TimedRobot):
-
+from Turret import Turret
+class MyRobot(wpilib.TimedRobot):
     def robotInit(self):
-        self.torreta = Turret.Turret()
+        self.turret = Turret()
         self.joystick = wpilib.Joystick(0)
 
+    def robotPeriodic(self):
+        self.turret.update()
+
     def teleopPeriodic(self):
-
         if self.joystick.getRawButton(1):
-            self.torreta.turnLeft()
-        elif self.joystick.getRawButton(2):
-            self.torreta.turnRight()    
+            self.turret.shoot()
         else:
-            self.torreta.stopTurret()    
-
-
+            self.turret.stop() 
