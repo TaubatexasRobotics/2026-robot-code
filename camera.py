@@ -1,3 +1,4 @@
+from unittest import result
 import constants
 from photonlibpy import PhotonCamera
 from typing import Optional, Tuple
@@ -57,21 +58,26 @@ class PhotonVisionCamera(Camera):
         return -1, -1
 
 
-class Limelight(Camera):
+class LimelightCamera(Camera):
     def __init__(self, camera: str) -> None:
         self.limelight = Limelight(camera)
         PortForwarder.getInstance().add(*constants.kLimelightPortForwarder)
 
-    def getYaw(self, tag: int) -> float:
+    def getYawFromTag(self, tag: int) -> float:
         self.limelight.pipeline_switch(0)
         result = self.limelight.get_results()
         parsed_result = parse_results(result)
-        return 0
+
+        for target in parsed_result.targets_Fiducials:
+            if target.fiducialID == tag:
+                return target.tx  # yaw
+
+        return -1
+
+    
 
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
-
-
 class Pixy2(Camera):
     pass
 

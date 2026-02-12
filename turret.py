@@ -1,12 +1,13 @@
 from phoenix6.hardware import TalonFX
 from camera import Camera
 from wpimath.controller import PIDController
+import rev
 
 
 class Turret:
     def __init__(self):
-        self.yaw = TalonFX(20)
-        self.pid_angular = PIDController(0.1, 0, 0)
+        self.yaw = rev.SparkMax(51, rev.SparkMax.MotorType.kBrushless)
+        self.pid_angular = PIDController(0.05, 0, 0)
 
     def yawLeft(self):
         self.yaw.set(1)
