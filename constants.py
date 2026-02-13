@@ -61,3 +61,5 @@ kLEDUSBPort = SerialPort.Port.kUSB1
 # Intake
 kIntakeAngleMotor = 53
 kIntakeTrackMotor = 12
+kPivotTimeDown = 0.35
+kPivotTimeUp = 0.5

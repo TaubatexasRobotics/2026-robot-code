@@ -1,32 +1,52 @@
-from rev import SparkMax, SparkLowLevel
-from phoenix5 import WPI_VictorSPX
+from phoenix5 import WPI_VictorSPX, ControlMode
+from commands2 import Subsystem
+from wpilib import Timer
 import constants
 
 
-class Intake:
-    def __init__(self):
-        self.arm_motor = SparkMax(
-            constants.kIntakeAngleMotor, SparkLowLevel.MotorType.kBrushless
-        )
-        self.roll_motor = WPI_VictorSPX(constants.kIntakeTrackMotor)
+class Intake(Subsystem):
+    def __init__(self) -> None:
+        self.pivot = WPI_VictorSPX(constants.kIntakeAngleMotor)
+        self.roller = WPI_VictorSPX(constants.kIntakeTrackMotor)
+        self.pivotUp = False
+        self.lastBurstTime = 0
 
-        self.encoder = self.arm_motor.getEncoder()
-        self.alt_encoder = self.arm_motor.getAlternateEncoder()
+    def isPivotUp(self) -> bool:
+        return self.pivotUp
 
-    def turnDown(self):
-        self.arm_motor.set(1)
+    def periodic(self) -> None:
+        elapsed = Timer.getFPGATimestamp() - self.lastBurstTime
+        percent = 0
 
-    def stopArm(self):
-        self.arm_motor.set(0)
+        if self.pivotUp:
+            percent = 0.5 if elapsed < constants.kPivotTimeUp else 0
+        else:
+            percent = -0.5 if elapsed < constants.kPivotTimeDown else 0
+        
+        self.pivot.set(ControlMode.PercentOutput, percent)
 
-    def turnUp(self):
-        self.arm_motor.set(1)
+    def startPivotUp(self) -> None:
+        if self.pivotUp:
+            return
 
-    def suckBalls(self):
-        self.roll_motor.set(-1)
+        self.pivotUp = True
+        self.lastBurstTime = Timer.getFPGATimestamp()
 
-    def stopRoll(self):
-        self.roll_motor.set(0)
+    def stopPivot(self) -> None:
+        self.pivot.set(0)
 
-    def dropBalls(self):
-        self.roll_motor.set(1)
+    def startPivotDown(self) -> None:
+        if not self.pivotUp:
+            return
+        
+        self.pivotUp = False
+        self.lastBurstTime = Timer.getFPGATimestamp()
+
+    def get(self) -> None:
+        self.roller.set(-1)
+
+    def stop(self) -> None:
+        self.roller.set(0)
+
+    def release(self) -> None:
+        self.roller.set(1)
