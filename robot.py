@@ -37,7 +37,7 @@ class Robot(TimedCommandRobot):
         CommandScheduler.getInstance().cancelAll()
 
     def teleopPeriodic(self) -> None:
-        if self.driver_joystick.getRawButton(1):
-            self.turret.turretAlign(16, self.camera)
-        else:
-            self.turret.stop()
+        # if self.driver_joystick.getRawButtonPressed(1):
+        self.turret.turretAlign(16, self.camera)
+        # else:
+        #     self.turret.stop()

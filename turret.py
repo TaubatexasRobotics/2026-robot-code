@@ -7,7 +7,7 @@ import rev
 class Turret:
     def __init__(self):
         self.yaw = rev.SparkMax(51, rev.SparkMax.MotorType.kBrushless)
-        self.pid_angular = PIDController(0.05, 0, 0)
+        self.pid_angular = PIDController(0.005, 0, 0)
 
     def yawLeft(self):
         self.yaw.set(1)
