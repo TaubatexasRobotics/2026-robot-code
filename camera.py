@@ -1,4 +1,3 @@
-from unittest import result
 import constants
 from photonlibpy import PhotonCamera
 from typing import Optional, Tuple
@@ -9,8 +8,7 @@ from limelightresults import parse_results
 from wpinet import PortForwarder
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 from wpimath.units import degreesToRadians
-import wpilib
-
+from wpilib import RobotBase
 
 class Camera(ABC):
     @abstractmethod
@@ -63,7 +61,7 @@ class LimelightCamera(Camera):
     def __init__(self, camera: str) -> None:
         self.limelight = None
         
-        if not wpilib.RobotBase.isSimulation():
+        if not RobotBase.isSimulation():
             self.limelight = Limelight(camera)
             self.limelight.pipeline_switch(0)
 
@@ -82,10 +80,9 @@ class LimelightCamera(Camera):
 
         return -1
 
-    
-
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
+
 class Pixy2(Camera):
     pass
 
