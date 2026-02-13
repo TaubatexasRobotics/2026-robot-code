@@ -9,6 +9,7 @@ from limelightresults import parse_results
 from wpinet import PortForwarder
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 from wpimath.units import degreesToRadians
+import wpilib
 
 
 class Camera(ABC):
@@ -60,17 +61,24 @@ class PhotonVisionCamera(Camera):
 
 class LimelightCamera(Camera):
     def __init__(self, camera: str) -> None:
-        self.limelight = Limelight(camera)
+        self.limelight = None
+        
+        if not wpilib.RobotBase.isSimulation():
+            self.limelight = Limelight(camera)
+            self.limelight.pipeline_switch(0)
+
         PortForwarder.getInstance().add(*constants.kLimelightPortForwarder)
 
     def getYawFromTag(self, tag: int) -> float:
-        self.limelight.pipeline_switch(0)
+        if self.limelight is None:
+            return -1
+        
         result = self.limelight.get_results()
         parsed_result = parse_results(result)
 
-        for target in parsed_result.targets_Fiducials:
-            if target.fiducialID == tag:
-                return target.tx  # yaw
+        for target in parsed_result.fiducialResults:
+            if target.fiducial_id == tag:
+                return target.target_x_degrees  # yaw
 
         return -1
 

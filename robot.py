@@ -15,7 +15,7 @@ class Robot(TimedCommandRobot):
     def robotInit(self) -> None:
         #self.drivetrain = Drivetrain()
         self.turret = Turret()
-        self.camera = LimelightCamera("7459")
+        self.camera = LimelightCamera("172.29.0.1")
         self.driver_joystick = GenericJoystick(constants.kJoystickDriverPort)
 
         '''self.drivetrain.setDefaultCommand(
