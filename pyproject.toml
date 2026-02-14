@@ -13,7 +13,7 @@ robotpy_version = "2026.2.1"
 components = [
     # "all",
     # "apriltag",
-    # "commands2",
+    "commands2",
     # "cscore",
     # "romi",
     # "sim",
@@ -23,11 +23,11 @@ components = [
 # Other pip packages to install, such as vendor packages (each element
 # is equivalent to a line in requirements.txt)
 requires = [
+    "robotpy-pathplannerlib",
     "robotpy-navx",
     "robotpy-rev",
-    "photonlibpy", 
+    "photonlibpy",
     "robotpy-ctre",
     "robotpy-pykit",
-    "robotpy-pathplannerlib",
-    "robotpy-commands-v2"
+    "limelightlib-python"
 ]

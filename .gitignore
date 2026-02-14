@@ -1,6 +1,12 @@
+# Vim temporarily files
+*.swp
+
 # WPILib default config
 tests/
 .wpilib/
+
+# WPILib default simulator
+simgui-ds.json
 
 # CTRE Simulator
 ctre_sim

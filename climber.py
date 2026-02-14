@@ -3,6 +3,7 @@ import rev
 import phoenix6
 import phoenix5
 
+
 class Climber:
     def __init__(self):
         self.left_motor = phoenix5.WPI_VictorSPX(1)
