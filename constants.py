@@ -1,7 +1,7 @@
 from math import pi
 from wpilib import SerialPort
 from wpimath.kinematics import DifferentialDriveKinematics
-from rev import SparkLowLevel, SparkBaseConfig
+from rev import SparkLowLevel, FeedbackSensor
 
 # Joystick
 kJoystickDriverPort = 0
@@ -28,7 +28,8 @@ kCameraPitchRadians = 0
 kGoalRangeMeters = 1
 
 # Limelight 3A
-kLimelightPortForwarder = (5807, "172.29.0.1", 5807)  # port, remoteHost, remotePort
+kLimelightRemoteHost = "172.29.0.1"
+kLimelightPortForwarder = (5807, kLimelightRemoteHost, 5807)  # port, remoteHost, remotePort
 
 # Drivetrain Odometry
 kInitialPose = (0, 0, 0)
@@ -46,6 +47,7 @@ kWheelDiameter = 0.152  # HiGrip
 kGearReduction = 10.7  # Toughbox Mini
 kRotationsToMeters = (kWheelDiameter * pi) / kGearReduction
 kRotationsPerMinuteToMetersPerSecond = kRotationsToMeters / 60
+kFeedbackSensor = FeedbackSensor.kPrimaryEncoder
 
 # Drivetrain Feedforward
 ksVolts = 0.30329
