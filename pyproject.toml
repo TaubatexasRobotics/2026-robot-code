@@ -28,6 +28,6 @@ requires = [
     "robotpy-rev",
     "photonlibpy",
     "robotpy-ctre",
-    #"robotpy-pykit",
+    "robotpy-pykit",
     "limelightlib-python"
 ]

@@ -18,7 +18,7 @@ kRightBackId = 54
 kDrivetrainSmartCurrentLimit = 40
 kDrivetrainMotorType = SparkLowLevel.MotorType.kBrushless
 kDrivetrainIdleMode = SparkBaseConfig.IdleMode.kBrake
-kDrivetrainPID = (0.1, 0, 0)
+kDrivetrainPID = (0.2, 0, 0)
 
 # PhotonVision
 kCameraName = "Camera7459"
@@ -48,9 +48,9 @@ kRotationsToMeters = (kWheelDiameter * pi) / kGearReduction
 kRotationsPerMinuteToMetersPerSecond = kRotationsToMeters / 60
 
 # Drivetrain Feedforward
-ksVolts = 0.22
-kvVoltSecondsPerMeter = 1.98
-kaVoltSecondsSquaredPerMeter = 0.2
+ksVolts = 0.30329
+kvVoltSecondsPerMeter = 2.9096
+kaVoltSecondsSquaredPerMeter = 0.35543
 
 # Arduino
 kBaudRate = 9600
@@ -59,7 +59,7 @@ kBaudRate = 9600
 kLEDUSBPort = SerialPort.Port.kUSB1
 
 # Intake
-kIntakeAngleMotor = 53
+kIntakeAngleMotor = 1
 kIntakeTrackMotor = 12
 kPivotTimeDown = 0.35
 kPivotTimeUp = 0.5
