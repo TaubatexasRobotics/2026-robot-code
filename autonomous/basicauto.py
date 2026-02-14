@@ -28,7 +28,7 @@ class BasicAuto(Command):
 
         wheelSpeeds = constants.kDrivetrainKinematics.toWheelSpeeds(adjustedSpeeds)
 
-        self.drivetrain.setSpeeds(wheelSpeeds)
+        self.drivetrain.driveWithWheelSpeeds(wheelSpeeds)
 
     def end(self, interrupted: bool) -> None:
         self.drivetrain.stop()

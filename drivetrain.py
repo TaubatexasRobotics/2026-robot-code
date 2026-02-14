@@ -138,7 +138,7 @@ class Drivetrain(Subsystem):
             self.getPose,
             self.resetPose,
             self.getRelativeSpeeds,
-            lambda speeds, feedforwards: self.driveRobotRelative(speeds),
+            lambda speeds, feedforwards: self.driveWithRelativeSpeeds(speeds),
             PPLTVController(0.02),
             pathConfig,
             self.shouldFlipPath,
@@ -166,7 +166,7 @@ class Drivetrain(Subsystem):
     def getPose(self) -> Pose2d:
         return self.odometry.getPose()
 
-    def setSpeeds(self, speeds: DifferentialDriveWheelSpeeds) -> None:
+    def driveWithWheelSpeeds(self, speeds: DifferentialDriveWheelSpeeds) -> None:
         left_feedforward = self.feedforward.calculate(speeds.left)
         right_feedforward = self.feedforward.calculate(speeds.right)
 
@@ -182,6 +182,15 @@ class Drivetrain(Subsystem):
             ClosedLoopSlot.kSlot0,
             right_feedforward,
         )
+    
+    def driveWithRelativeSpeeds(self, chassisSpeeds: ChassisSpeeds) -> None:
+        wheelSpeeds = constants.kDrivetrainKinematics.toWheelSpeeds(chassisSpeeds)
+        self.left_closed_loop.setSetpoint(
+            wheelSpeeds.left, SparkLowLevel.ControlType.kVelocity
+        )
+        self.right_closed_loop.setSetpoint(
+            wheelSpeeds.right, SparkLowLevel.ControlType.kVelocity
+        )
 
     def getWheelSpeeds(self) -> DifferentialDriveWheelSpeeds:
         return DifferentialDriveWheelSpeeds(
@@ -189,7 +198,7 @@ class Drivetrain(Subsystem):
         )
 
     def getRelativeSpeeds(self) -> ChassisSpeeds:
-        return constants.kDriveKinematics.toChassisSpeeds(
+        return constants.kDrivetrainKinematics.toChassisSpeeds(
             DifferentialDriveWheelSpeeds(
                 self.left_encoder.getVelocity(), self.right_encoder.getVelocity()
             )

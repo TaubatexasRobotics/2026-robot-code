@@ -23,6 +23,7 @@ class Robot(TimedCommandRobot):
 
     def robotInit(self) -> None:
         self.autoChooser.addOption("Basic Auto", BasicAuto(self.drivetrain))
+        SmartDashboard.putData("Auto Chooser", self.autoChooser)
         
         JoystickButton(self.driverJoystick, 1).onTrue(
             run(
