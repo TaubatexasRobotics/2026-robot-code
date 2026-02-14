@@ -1,6 +1,6 @@
 from phoenix5 import WPI_VictorSPX, ControlMode
 from commands2 import Subsystem
-from wpilib import Timer
+from wpilib import Timer, SmartDashboard
 import constants
 
 
@@ -11,6 +11,9 @@ class Intake(Subsystem):
         self.pivotUp = False
         self.lastBurstTime = 0
 
+        kPivotTimeUp = SmartDashboard.putNumber("up", 0.5)
+        kPivotTimeDown = SmartDashboard.putNumber("down", 0.5)
+
     def isPivotUp(self) -> bool:
         return self.pivotUp
 
@@ -18,10 +21,13 @@ class Intake(Subsystem):
         elapsed = Timer.getFPGATimestamp() - self.lastBurstTime
         percent = 0
 
+        kPivotTimeUp = SmartDashboard.getNumber("up", 0)
+        kPivotTimeDown = SmartDashboard.getNumber("down", 0)
+        
         if self.pivotUp:
-            percent = 0.5 if elapsed < constants.kPivotTimeUp else 0
+            percent = -1 if elapsed < kPivotTimeUp else 0
         else:
-            percent = -0.5 if elapsed < constants.kPivotTimeDown else 0
+            percent = 1 if elapsed < kPivotTimeDown else 0
         
         self.pivot.set(ControlMode.PercentOutput, percent)
 
