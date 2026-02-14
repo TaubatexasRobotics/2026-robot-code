@@ -1,7 +1,7 @@
 from math import pi
 from wpilib import SerialPort
 from wpimath.kinematics import DifferentialDriveKinematics
-from rev import SparkLowLevel, FeedbackSensor
+from rev import SparkLowLevel, FeedbackSensor, SparkBaseConfig
 
 # Joystick
 kJoystickDriverPort = 0

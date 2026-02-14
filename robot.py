@@ -9,44 +9,44 @@ from camera import Camera, PhotonVisionCamera, LimelightCamera
 from turret import Turret
 from commands2.button import JoystickButton
 from intake import Intake
+from pathplannerlib.auto import AutoBuilder
+from wpilib import SmartDashboard, SendableChooser
+from wpilib.interfaces import GenericHID
 
 
 class Robot(TimedCommandRobot):
     autonomous: Optional[Command] = None
+    drivetrain: Drivetrain = Drivetrain()
+    intake: Intake = Intake()
+    autoChooser: SendableChooser = AutoBuilder.buildAutoChooser()
+    driverJoystick: GenericHID = GenericJoystick(constants.kJoystickDriverPort)
 
     def robotInit(self) -> None:
-        self.drivetrain = Drivetrain()
-        #self.turret = Turret()
-        self.intake = Intake()
-        #self.camera = LimelightCamera("172.29.0.1")
-        self.driver_joystick = GenericJoystick(constants.kJoystickDriverPort)
-
-        JoystickButton(self.driver_joystick, 1).onTrue(
+        self.autoChooser.addOption("Basic Auto", BasicAuto(self.drivetrain))
+        
+        JoystickButton(self.driverJoystick, 1).onTrue(
             run(
                 lambda: self.intake.startPivotUp(),
                 self.intake
             )
         )
 
-        JoystickButton(self.driver_joystick, 2).onTrue(
+        JoystickButton(self.driverJoystick, 2).onTrue(
             run(
                 lambda: self.intake.startPivotDown(),
                 self.intake
             )
         )
 
-        '''self.drivetrain.setDefaultCommand(
-            run(
-                lambda: self.drivetrain.arcadeDrive(
-                    self.driver_joystick.getLeftYAxis(),
-                    self.driver_joystick.getRightXAxis(),
-                ),
-                self.drivetrain,
+        self.drivetrain.setDefaultCommand(
+            self.drivetrain.arcadeDrive(
+                self.driverJoystick.getLeftYAxis(),
+                self.driverJoystick.getRightXAxis(),
             )
         )
-        '''
+        
     def autonomousInit(self) -> None:
-        self.autonomous = BasicAuto(self.drivetrain)
+        self.autonomous = self.autoChooser.getSelected()
         self.autonomous.schedule()
 
     def autonomousExit(self) -> None:

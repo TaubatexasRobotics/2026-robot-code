@@ -1,12 +1,16 @@
 import constants
-from commands2 import Subsystem
+from commands2 import Subsystem, Command
 from typing import Optional
 from camera import Camera
 from wpilib import DriverStation, Field2d, SmartDashboard
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController, SimpleMotorFeedforwardMeters
-from wpimath.kinematics import DifferentialDriveOdometry, DifferentialDriveWheelSpeeds
+from wpimath.kinematics import (
+    DifferentialDriveOdometry, 
+    DifferentialDriveWheelSpeeds, 
+    ChassisSpeeds,
+)
 from wpimath.geometry import Pose2d, Rotation2d
 from rev import (
     SparkMax,
@@ -18,7 +22,9 @@ from rev import (
 )
 from wpilib.simulation import DifferentialDrivetrainSim
 from wpimath.system.plant import LinearSystemId, DCMotor
-
+from pathplannerlib.auto import AutoBuilder
+from pathplannerlib.controller import PPLTVController
+from pathplannerlib.config import RobotConfig
 
 class Drivetrain(Subsystem):
     def __init__(self) -> None:
@@ -63,6 +69,7 @@ class Drivetrain(Subsystem):
             constants.kMaxAccelerationMetersPerSecondSquared
         )
         config.closedLoop.maxMotion.maxVelocity(constants.kMaxVelocityMetersPerSecond)
+        config.closedLoop.setFeedbackSensor(constants.kFeedbackSensor)
 
         config.encoder.positionConversionFactor(constants.kRotationsToMeters)
         config.encoder.velocityConversionFactor(
@@ -122,6 +129,22 @@ class Drivetrain(Subsystem):
             constants.kaVoltSecondsSquaredPerMeter,
         )
 
+        try:
+            pathConfig = RobotConfig.fromGUISettings()
+        except:
+            raise Exception("ERROR: No Robot Config Loaded.")
+
+        AutoBuilder.configure(
+            self.getPose,
+            self.resetPose,
+            self.getRelativeSpeeds,
+            lambda speeds, feedforwards: self.driveRobotRelative(speeds),
+            PPLTVController(0.02),
+            pathConfig,
+            self.shouldFlipPath,
+            self
+        )
+    
     def stop(self) -> None:
         self.drivetrain.arcadeDrive(0, 0)
 
@@ -165,20 +188,27 @@ class Drivetrain(Subsystem):
             self.left_encoder.getVelocity(), self.right_encoder.getVelocity()
         )
 
-    def forward(self) -> None:
-        self.drivetrain.arcadeDrive(1, 0)
+    def getRelativeSpeeds(self) -> ChassisSpeeds:
+        return constants.kDriveKinematics.toChassisSpeeds(
+            DifferentialDriveWheelSpeeds(
+                self.left_encoder.getVelocity(), self.right_encoder.getVelocity()
+            )
+        )
+    
+    def forward(self) -> Command:
+        self.run(lambda: self.drivetrain.arcadeDrive(1, 0))
 
     def backward(self) -> None:
-        self.drivetrain.arcadeDrive(-1, 0)
+        self.run(lambda: self.drivetrain.arcadeDrive(-1, 0))
 
-    def arcadeDrive(self, speed: float, rotate: float) -> None:
-        self.drivetrain.arcadeDrive(speed, rotate)
+    def arcadeDrive(self, speed: float, rotate: float) -> Command:
+        self.run(lambda: self.drivetrain.arcadeDrive(speed, rotate))
 
-    def cheesyDrive(self, speed: float, rotate: float) -> None:
-        self.drivetrain.curvatureDrive(speed, rotate)
+    def cheesyDrive(self, speed: float, rotate: float) -> Command:
+        self.run(lambda: self.drivetrain.curvatureDrive(speed, rotate))
 
-    def tankDrive(self, left_speed: float, right_speed: float) -> None:
-        self.drivetrain.tankDrive(left_speed, right_speed)
+    def tankDrive(self, left_speed: float, right_speed: float) -> Command:
+        self.run(lambda: self.drivetrain.tankDrive(left_speed, right_speed))
 
     def periodic(self) -> None:
         self.field.setRobotPose(self.odometry.getPose())
