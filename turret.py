@@ -1,11 +1,9 @@
-import rev
+from rev import SparkMax, SparkLowLevel
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
 
-class Turret:
+class Turret(Subsystem):
     def __init__(self):
-        self.turret_motor = rev.SparkMax(
-            51, rev.SparkLowLevel.MotorType.kBrushless
-        )
+        self.turret_motor = SparkMax(51, SparkLowLevel.MotorType.kBrushless)
         self.encoder = self.turret_motor.getEncoder()
         self.pid = PIDController(0.00025, 0, 0)
         self.pid.setTolerance(100)

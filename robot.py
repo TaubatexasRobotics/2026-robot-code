@@ -1,7 +1,8 @@
 import constants
 from drivetrain import Drivetrain
 from genericjoystick import GenericJoystick
-from autonomous.basicauto import BasicAuto
+from autonomous.autoltvcontroller import AutoLTVController
+from autonomous.drivestraightpath import DriveStraightPath
 from commands2 import TimedCommandRobot, CommandScheduler, Command
 from typing import Optional
 from commands2.cmd import run
@@ -23,22 +24,13 @@ class Robot(TimedCommandRobot):
     driverJoystick: GenericHID = GenericJoystick(constants.kJoystickDriverPort)
 
     def robotInit(self) -> None:
-        self.autoChooser.addOption("Basic Auto", BasicAuto(self.drivetrain))
+        self.autoChooser.addOption("LTV Controller Test Auto", AutoLTVController(self.drivetrain))
+        self.autoChooser.addOption("Drive Straight Path", DriveStraightPath(self.drivetrain, 5))
         SmartDashboard.putData("Auto Chooser", self.autoChooser)
-        
-        JoystickButton(self.driverJoystick, 5).onTrue(
-            run(
-                lambda: self.intake.startPivotUp(),
-                self.intake
-            )
-        )
 
-        JoystickButton(self.driverJoystick, 6).onTrue(
-            run(
-                lambda: self.intake.startPivotDown(),
-                self.intake
-            )
-        )
+        JoystickButton(self.driverJoystick, 5).onTrue(self.intake.up())
+
+        JoystickButton(self.driverJoystick, 6).onTrue(self.intake.down())
 
         JoystickButton(self.driverJoystick, 1).onTrue(
             self.drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)

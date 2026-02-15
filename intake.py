@@ -1,16 +1,16 @@
 from phoenix5 import WPI_VictorSPX, ControlMode
-from commands2 import Subsystem
+from commands2 import Subsystem, Command
 from wpilib import Timer, SmartDashboard
 import constants
 
 
 class Intake(Subsystem):
-    def __init__(self) -> None:
-        self.pivot = WPI_VictorSPX(constants.kIntakeAngleMotor)
-        self.roller = WPI_VictorSPX(constants.kIntakeTrackMotor)
-        self.pivotUp = False
-        self.lastBurstTime = 0
+    pivot: WPI_VictorSPX = WPI_VictorSPX(constants.kIntakeAngleMotor)
+    roller: WPI_VictorSPX = WPI_VictorSPX(constants.kIntakeTrackMotor)
+    pivotUp: bool = False
+    lastBurstTime: int = 0
 
+    def __init__(self) -> None:
         kPivotTimeUp = SmartDashboard.putNumber("up", 0.5)
         kPivotTimeDown = SmartDashboard.putNumber("down", 0.5)
 
@@ -47,12 +47,18 @@ class Intake(Subsystem):
         
         self.pivotUp = False
         self.lastBurstTime = Timer.getFPGATimestamp()
+    
+    def up(self) -> Command:
+        return self.run(lambda: self.startPivotUp())
+    
+    def down(self) -> Command:
+        return self.run(lambda: self.startPivotDown())
 
-    def get(self) -> None:
+    def collectGamePiece(self) -> None:
         self.roller.set(-1)
 
-    def stop(self) -> None:
+    def stopGamePieceCollector(self) -> None:
         self.roller.set(0)
 
-    def release(self) -> None:
+    def releaseGamePiece(self) -> None:
         self.roller.set(1)
