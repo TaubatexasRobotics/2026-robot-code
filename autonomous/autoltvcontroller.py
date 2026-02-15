@@ -6,7 +6,7 @@ from wpimath.trajectory import TrajectoryConfig, TrajectoryGenerator
 from wpimath.geometry import Pose2d, Rotation2d, Translation2d
 
 
-class BasicAuto(Command):
+class AutoLTVController(Command):
     def __init__(self, drivetrain: Drivetrain) -> None:
         super().__init__()
         self.trajectory = TrajectoryGenerator.generateTrajectory(
