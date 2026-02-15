@@ -1,24 +1,35 @@
-from phoenix6.hardware import TalonFX
-from camera import Camera
-from wpimath.controller import PIDController
 import rev
-
+from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
 
 class Turret:
     def __init__(self):
-        self.yaw = rev.SparkMax(51, rev.SparkMax.MotorType.kBrushless)
-        self.pid_angular = PIDController(0.005, 0, 0)
+        self.turret_motor = rev.SparkMax(
+            51, rev.SparkLowLevel.MotorType.kBrushless
+        )
+        self.encoder = self.turret_motor.getEncoder()
+        self.pid = PIDController(0.00025, 0, 0)
+        self.pid.setTolerance(100)
+        self.target_RPM = 4500
+        self.feedforward = SimpleMotorFeedforwardRadians(0, 0.002)
 
-    def yawLeft(self):
-        self.yaw.set(1)
-
-    def yawRight(self):
-        self.yaw.set(-1)
+    def shoot(self):
+        self.target_RPM = 4500
 
     def stop(self):
-        self.yaw.set(0)
+        self.target_RPM = 0
+        self.turret_motor.stopMotor()
+        self.pid.reset()
 
-    def turretAlign(self, tag: int, camera: Camera) -> None:
-        tag_yaw = camera.getYawFromTag(tag)
-        turn = self.pid_angular.calculate(tag_yaw, 0) if tag_yaw != -1 else 0
-        self.yaw.set(turn)
+    def update(self):
+        if self.target_RPM == 0:
+            return
+        output = self.pid.calculate(
+            self.encoder.getVelocity(),
+            self.target_RPM
+        )
+        output += self.feedforward.calculate(self.target_RPM)
+        output = max(min(output, 1.0), -1.0)
+        self.turret_motor.set(output)
+
+    def isReady(self):
+        return abs(self.encoder.getVelocity() - self.target_RPM) < 100

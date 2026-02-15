@@ -31,7 +31,11 @@ class PhotonVisionCamera(Camera):
             return target
         return None
 
+<<<<<<< HEAD
     def getYawFromTag(self, tag: int) -> float:
+=======
+    def getYaw(self, tag: int) -> float:
+>>>>>>> e0a326a510a2937cda8599367abc573bb1ff12b8
         results = self.camera.getAllUnreadResults()
         if len(results) > 0:
             result = results[-1]
