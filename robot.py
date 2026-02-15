@@ -12,6 +12,7 @@ from intake import Intake
 from pathplannerlib.auto import AutoBuilder
 from wpilib import SmartDashboard, SendableChooser
 from wpilib.interfaces import GenericHID
+from commands2.sysid import SysIdRoutine
 
 
 class Robot(TimedCommandRobot):
@@ -25,24 +26,40 @@ class Robot(TimedCommandRobot):
         self.autoChooser.addOption("Basic Auto", BasicAuto(self.drivetrain))
         SmartDashboard.putData("Auto Chooser", self.autoChooser)
         
-        JoystickButton(self.driverJoystick, 1).onTrue(
+        JoystickButton(self.driverJoystick, 5).onTrue(
             run(
                 lambda: self.intake.startPivotUp(),
                 self.intake
             )
         )
 
-        JoystickButton(self.driverJoystick, 2).onTrue(
+        JoystickButton(self.driverJoystick, 6).onTrue(
             run(
                 lambda: self.intake.startPivotDown(),
                 self.intake
             )
         )
 
+        JoystickButton(self.driverJoystick, 1).onTrue(
+            self.drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+        )
+
+        JoystickButton(self.driverJoystick, 2).onTrue(
+            self.drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+        )
+
+        JoystickButton(self.driverJoystick, 3).onTrue(
+            self.drivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward)
+        )
+
+        JoystickButton(self.driverJoystick, 4).onTrue(
+            self.drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse)
+        )
+
         self.drivetrain.setDefaultCommand(
             self.drivetrain.arcadeDrive(
-                self.driverJoystick.getLeftYAxis(),
-                self.driverJoystick.getRightXAxis(),
+                lambda: self.driverJoystick.getLeftYAxis(),
+                lambda: self.driverJoystick.getRightXAxis(),
             )
         )
         

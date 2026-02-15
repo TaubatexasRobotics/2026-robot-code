@@ -49,10 +49,10 @@ kRotationsToMeters = (kWheelDiameter * pi) / kGearReduction
 kRotationsPerMinuteToMetersPerSecond = kRotationsToMeters / 60
 kFeedbackSensor = FeedbackSensor.kPrimaryEncoder
 
-# Drivetrain Feedforward
-ksVolts = 0.30329
-kvVoltSecondsPerMeter = 2.9096
-kaVoltSecondsSquaredPerMeter = 0.35543
+# Drivetrain Feedforward (kS = V, kV = V * s / m, kA = V * s^2 / m)
+kDrivetrainKS = 0.30329
+kDrivetrainKV = 2.9096
+kDrivetrainKA = 0.35543
 
 # Arduino
 kBaudRate = 9600

@@ -1,6 +1,6 @@
 import constants
 from commands2 import Subsystem, Command
-from typing import Optional
+from typing import Optional, Callable
 from camera import Camera
 from wpilib import DriverStation, Field2d, SmartDashboard
 from navx import AHRS
@@ -25,6 +25,10 @@ from wpimath.system.plant import LinearSystemId, DCMotor
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPLTVController
 from pathplannerlib.config import RobotConfig
+from commands2.sysid import SysIdRoutine
+from wpimath.units import volts
+from wpilib import RobotController
+
 
 class Drivetrain(Subsystem):
     def __init__(self) -> None:
@@ -64,7 +68,10 @@ class Drivetrain(Subsystem):
         config.smartCurrentLimit(constants.kDrivetrainSmartCurrentLimit)
         config.setIdleMode(constants.kDrivetrainIdleMode)
         config.closedLoop.pid(*constants.kDrivetrainPID)
-        config.closedLoop.velocityFF(constants.kvVoltSecondsPerMeter)
+        #config.closedLoop.feedForward.kS(constants.kDrivetrainKS)
+        #config.closedLoop.feedForward.kV(constants.kDrivetrainKV)
+        #config.closedLoop.feedForward.kA(constants.kDrivetrainKA)
+        config.closedLoop
         config.closedLoop.maxMotion.maxAcceleration(
             constants.kMaxAccelerationMetersPerSecondSquared
         )
@@ -124,9 +131,9 @@ class Drivetrain(Subsystem):
         )
 
         self.feedforward = SimpleMotorFeedforwardMeters(
-            constants.ksVolts,
-            constants.kvVoltSecondsPerMeter,
-            constants.kaVoltSecondsSquaredPerMeter,
+            constants.kDrivetrainKS,
+            constants.kDrivetrainKV,
+            constants.kDrivetrainKA,
         )
 
         try:
@@ -144,7 +151,13 @@ class Drivetrain(Subsystem):
             self.shouldFlipPath,
             self
         )
-    
+
+        self.sys_id_routine = SysIdRoutine(
+            SysIdRoutine.Config(),
+            SysIdRoutine.Mechanism(self.sysIdDriveVoltage, self.log, self),
+        )
+
+            
     def stop(self) -> None:
         self.drivetrain.arcadeDrive(0, 0)
 
@@ -210,14 +223,37 @@ class Drivetrain(Subsystem):
     def backward(self) -> None:
         self.run(lambda: self.drivetrain.arcadeDrive(-1, 0))
 
-    def arcadeDrive(self, speed: float, rotate: float) -> Command:
-        self.run(lambda: self.drivetrain.arcadeDrive(speed, rotate))
+    def arcadeDrive(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
+        self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate()))
 
-    def cheesyDrive(self, speed: float, rotate: float) -> Command:
-        self.run(lambda: self.drivetrain.curvatureDrive(speed, rotate))
+    def cheesyDrive(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
+        self.run(lambda: self.drivetrain.curvatureDrive(speed(), rotate()))
 
-    def tankDrive(self, left_speed: float, right_speed: float) -> Command:
-        self.run(lambda: self.drivetrain.tankDrive(left_speed, right_speed))
+    def tankDrive(self, left_speed: Callable[[], float], right_speed: Callable[[], float]) -> Command:
+        self.run(lambda: self.drivetrain.tankDrive(left_speed(), right_speed()))
+    
+    def sysIdDriveVoltage(self, voltage: volts) -> None:
+        self.left_front_motor.setVoltage(volts)
+        self.right_front_motor.setVoltage(volts)
+
+    def log(self, sys_id_routine: SysIdRoutineLog) -> None:
+        sys_id_routine.motor("drive-left").voltage(
+            self.left_front_motor.get() * RobotController.getBatteryVoltage()
+        ).position(self.left_encoder.getDistance()).velocity(
+            self.left_encoder.getRate()
+        )
+
+        sys_id_routine.motor("drive-right").voltage(
+            self.right_front_motor.get() * RobotController.getBatteryVoltage()
+        ).position(self.right_encoder.getDistance()).velocity(
+            self.right_encoder.getRate()
+        )
+
+    def sysIdQuasistatic(self, direction: SysIdRoutine.Direction) -> Command:
+        return self.sys_id_routine.quasistatic(direction)
+
+    def sysIdDynamic(self, direction: SysIdRoutine.Direction) -> Command:
+        return self.sys_id_routine.dynamic(direction)
 
     def periodic(self) -> None:
         self.field.setRobotPose(self.odometry.getPose())
