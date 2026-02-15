@@ -218,19 +218,19 @@ class Drivetrain(Subsystem):
         )
     
     def forward(self) -> Command:
-        self.run(lambda: self.drivetrain.arcadeDrive(1, 0))
+        return self.run(lambda: self.drivetrain.arcadeDrive(1, 0))
 
-    def backward(self) -> None:
-        self.run(lambda: self.drivetrain.arcadeDrive(-1, 0))
+    def backward(self) -> Command:
+        return self.run(lambda: self.drivetrain.arcadeDrive(-1, 0))
 
     def arcadeDrive(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
-        self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate()))
+        return self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate()))
 
     def cheesyDrive(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
-        self.run(lambda: self.drivetrain.curvatureDrive(speed(), rotate()))
+        return self.run(lambda: self.drivetrain.curvatureDrive(speed(), rotate()))
 
     def tankDrive(self, left_speed: Callable[[], float], right_speed: Callable[[], float]) -> Command:
-        self.run(lambda: self.drivetrain.tankDrive(left_speed(), right_speed()))
+        return self.run(lambda: self.drivetrain.tankDrive(left_speed(), right_speed()))
     
     def sysIdDriveVoltage(self, voltage: volts) -> None:
         self.left_front_motor.setVoltage(volts)

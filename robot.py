@@ -10,7 +10,7 @@ from turret import Turret
 from commands2.button import JoystickButton
 from intake import Intake
 from pathplannerlib.auto import AutoBuilder
-from wpilib import SmartDashboard, SendableChooser
+from wpilib import SmartDashboard, SendableChooser, DriverStation
 from wpilib.interfaces import GenericHID
 from commands2.sysid import SysIdRoutine
 
@@ -64,6 +64,7 @@ class Robot(TimedCommandRobot):
         )
         
     def autonomousInit(self) -> None:
+        DriverStation.silenceJoystickConnectionWarning(True)
         self.autonomous = self.autoChooser.getSelected()
         self.autonomous.schedule()
 
