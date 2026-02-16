@@ -26,6 +26,7 @@ class Robot(TimedCommandRobot):
         self.autoChooser.addOption("Drive Straight Path", DriveStraightPath(self.drivetrain, 5))
         SmartDashboard.putData("Auto Chooser", self.autoChooser)
 
+    def teleopInit(self) -> None:
         JoystickButton(self.driverJoystick, 5).onTrue(self.intake.up())
 
         JoystickButton(self.driverJoystick, 6).onTrue(self.intake.down())
@@ -62,3 +63,6 @@ class Robot(TimedCommandRobot):
 
     def autonomousExit(self) -> None:
         CommandScheduler.getInstance().cancelAll()
+    
+    def testInit(self) -> None:
+        JoystickButton(self.driverJoystick, 1).onTrue(self.shooter.setFlywheelBySetpointCommand())
