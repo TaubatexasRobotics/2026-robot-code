@@ -1,6 +1,6 @@
 import constants
 from commands2 import Subsystem, Command
-from typing import Optional, Callable
+from typing import Callable
 from camera import Camera
 from wpilib import DriverStation, Field2d, SmartDashboard
 from navx import AHRS
@@ -20,14 +20,13 @@ from rev import (
     SparkLowLevel,
     ClosedLoopSlot,
 )
-from wpilib.simulation import DifferentialDrivetrainSim
-from wpimath.system.plant import LinearSystemId, DCMotor
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPLTVController
 from pathplannerlib.config import RobotConfig
 from commands2.sysid import SysIdRoutine
 from wpimath.units import volts
 from wpilib import RobotController
+from wpilib.sysid import SysIdRoutineLog
 
 
 class Drivetrain(Subsystem):
@@ -44,34 +43,23 @@ class Drivetrain(Subsystem):
         self.right_back_motor = SparkMax(
             constants.kRightBackId, constants.kDrivetrainMotorType
         )
-
+        
         self.drivetrain = DifferentialDrive(
             self.left_front_motor, self.right_front_motor
         )
+        
         self.drivetrain.setSafetyEnabled(True)
-        self.field = Field2d()
+        self.drivetrain.setExpiration(0.1)
+        self.drivetrain.setMaxOutput(1.0)
 
-        """
-        self.drivetrain_system = LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3)
-        self.drivetrain_simulator = DifferentialDrivetrainSim(
-            self.drivetrain_system,
-            DCMotor.NEO(4),
-            8,
-            constants.kTrackWidth,
-            constants.kWheelDiameter / 2,
-            None
-        )
-        """
+        self.field = Field2d()
 
         config = SparkMaxConfig()
 
         config.smartCurrentLimit(constants.kDrivetrainSmartCurrentLimit)
         config.setIdleMode(constants.kDrivetrainIdleMode)
         config.closedLoop.pid(*constants.kDrivetrainPID)
-        #config.closedLoop.feedForward.kS(constants.kDrivetrainKS)
-        #config.closedLoop.feedForward.kV(constants.kDrivetrainKV)
-        #config.closedLoop.feedForward.kA(constants.kDrivetrainKA)
-        config.closedLoop
+        config.closedLoop.feedForward.sva(*constants.kDrivetrainFeedForward)
         config.closedLoop.maxMotion.maxAcceleration(
             constants.kMaxAccelerationMetersPerSecondSquared
         )
@@ -130,12 +118,7 @@ class Drivetrain(Subsystem):
             Pose2d(*constants.kInitialPose),
         )
 
-        self.feedforward = SimpleMotorFeedforwardMeters(
-            constants.kDrivetrainKS,
-            constants.kDrivetrainKV,
-            constants.kDrivetrainKA,
-        )
-
+        self.feedforward = SimpleMotorFeedforwardMeters(*constants.kDrivetrainFeedForward)
         try:
             pathConfig = RobotConfig.fromGUISettings()
         except:
@@ -165,7 +148,7 @@ class Drivetrain(Subsystem):
         self.left_encoder.setPosition(0)
         self.right_encoder.setPosition(0)
 
-    def shouldFlipPath(self) -> None:
+    def shouldFlipPath(self) -> bool:
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
     def resetPose(self, pose: Pose2d) -> None:
@@ -226,27 +209,27 @@ class Drivetrain(Subsystem):
     def arcadeDrive(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
         return self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate()))
 
-    def cheesyDrive(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
-        return self.run(lambda: self.drivetrain.curvatureDrive(speed(), rotate()))
+    def cheesyDrive(self, speed: Callable[[], float], rotate: Callable[[], float], allowTurnInPlace: bool) -> Command:
+        return self.run(lambda: self.drivetrain.curvatureDrive(speed(), rotate(), allowTurnInPlace))
 
     def tankDrive(self, left_speed: Callable[[], float], right_speed: Callable[[], float]) -> Command:
         return self.run(lambda: self.drivetrain.tankDrive(left_speed(), right_speed()))
     
     def sysIdDriveVoltage(self, voltage: volts) -> None:
-        self.left_front_motor.setVoltage(volts)
-        self.right_front_motor.setVoltage(volts)
+        self.left_front_motor.setVoltage(voltage)
+        self.right_front_motor.setVoltage(voltage)
 
     def log(self, sys_id_routine: SysIdRoutineLog) -> None:
         sys_id_routine.motor("drive-left").voltage(
             self.left_front_motor.get() * RobotController.getBatteryVoltage()
-        ).position(self.left_encoder.getDistance()).velocity(
-            self.left_encoder.getRate()
+        ).position(self.left_encoder.getPosition()).velocity(
+            self.left_encoder.getVelocity()
         )
 
         sys_id_routine.motor("drive-right").voltage(
             self.right_front_motor.get() * RobotController.getBatteryVoltage()
-        ).position(self.right_encoder.getDistance()).velocity(
-            self.right_encoder.getRate()
+        ).position(self.right_encoder.getPosition()).velocity(
+            self.right_encoder.getVelocity()
         )
 
     def sysIdQuasistatic(self, direction: SysIdRoutine.Direction) -> Command:
@@ -265,12 +248,12 @@ class Drivetrain(Subsystem):
         )
 
     def arcadeDriveAlign(self, camera: Camera, tag: int) -> None:
-        yaw = camera.getYaw(tag)
+        yaw = camera.getYawFromTag(tag)
         turn = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(0, turn)
 
     def arcadeDriveAimAndRange(self, camera: Camera, tag: int) -> None:
-        yaw, range = camera.getYawWithRange(tag)
+        yaw, range = camera.getYawAndRangeFromTag(tag)
         range = (
             self.pid_forward.calculate(range, constants.kGoalRangeMeters)
             if yaw != -1
@@ -279,8 +262,8 @@ class Drivetrain(Subsystem):
         rotation = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(range, rotation)
 
-    def zRotationFromDegrees(self, setpoint: Optional[float]) -> None:
-        self.pid_angular.setSetpoint(setpoint)
+    def zRotationFromDegrees(self, angle: float) -> None:
+        self.pid_angular.setSetpoint(angle)
         self.drivetrain.arcadeDrive(
             0,
             self.pid_angular.calculate(
