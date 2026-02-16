@@ -1,5 +1,6 @@
 from rev import SparkMax, SparkLowLevel
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
+from commands2 import Subsystem
 
 class Turret(Subsystem):
     def __init__(self):
