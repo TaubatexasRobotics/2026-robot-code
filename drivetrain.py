@@ -27,6 +27,7 @@ from commands2.sysid import SysIdRoutine
 from wpimath.units import volts
 from wpilib import RobotController
 from wpilib.sysid import SysIdRoutineLog
+from math import pi
 
 
 class Drivetrain(Subsystem):
@@ -106,19 +107,18 @@ class Drivetrain(Subsystem):
         self.navx = AHRS.create_spi()
         self.navx.reset()
 
-        self.pid_angular = PIDController(*constants.kDrivetrainPID)
-        self.pid_forward = PIDController(*constants.kDrivetrainPID)
+        self.pid_forward = PIDController(*constants.kDrivetrainPID[:3])
+        self.pid_angular = PIDController(*constants.kDrivetrainPID[:3])
 
-        rotation = Rotation2d.fromDegrees(self.navx.getAngle())
+        self.pid_angular.enableContinuousInput(-pi, pi)
 
         self.odometry = DifferentialDriveOdometry(
-            rotation,
+            Rotation2d.fromDegrees(self.navx.getAngle()),
             self.left_encoder.getPosition(),
             self.right_encoder.getPosition(),
             Pose2d(*constants.kInitialPose),
         )
 
-        self.feedforward = SimpleMotorFeedforwardMeters(*constants.kDrivetrainFeedForward)
         try:
             pathConfig = RobotConfig.fromGUISettings()
         except:
@@ -162,9 +162,9 @@ class Drivetrain(Subsystem):
     def getPose(self) -> Pose2d:
         return self.odometry.getPose()
 
-    def driveWithWheelSpeeds(self, speeds: DifferentialDriveWheelSpeeds) -> None:
-        left_feedforward = self.feedforward.calculate(speeds.left)
-        right_feedforward = self.feedforward.calculate(speeds.right)
+    def driveWithWheelSpeeds(self, speeds: DifferentialDriveWheelSpeeds, feedforward: SimpleMotorFeedforwardMeters) -> None:
+        left_feedforward = feedforward.calculate(speeds.left)
+        right_feedforward = feedforward.calculate(speeds.right)
 
         self.left_closed_loop.setReference(
             speeds.left,
@@ -247,12 +247,12 @@ class Drivetrain(Subsystem):
             self.right_encoder.getPosition(),
         )
 
-    def arcadeDriveAlign(self, camera: Camera, tag: int) -> None:
+    def aim(self, camera: Camera, tag: int) -> None:
         yaw = camera.getYawFromTag(tag)
         turn = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(0, turn)
 
-    def arcadeDriveAimAndRange(self, camera: Camera, tag: int) -> None:
+    def aimAndRange(self, camera: Camera, tag: int) -> None:
         yaw, range = camera.getYawAndRangeFromTag(tag)
         range = (
             self.pid_forward.calculate(range, constants.kGoalRangeMeters)
@@ -262,7 +262,7 @@ class Drivetrain(Subsystem):
         rotation = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
         self.drivetrain.arcadeDrive(range, rotation)
 
-    def zRotationFromDegrees(self, angle: float) -> None:
+    def rotate(self, angle: float) -> None:
         self.pid_angular.setSetpoint(angle)
         self.drivetrain.arcadeDrive(
             0,

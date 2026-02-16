@@ -1,7 +1,7 @@
 from math import pi
 from wpilib import SerialPort
 from wpimath.kinematics import DifferentialDriveKinematics
-from rev import SparkLowLevel, FeedbackSensor, SparkBaseConfig
+from rev import SparkLowLevel, FeedbackSensor, SparkBaseConfig, ClosedLoopSlot
 
 # Joystick
 kJoystickDriverPort = 0
@@ -18,7 +18,7 @@ kRightBackId = 54
 kDrivetrainSmartCurrentLimit = 40
 kDrivetrainMotorType = SparkLowLevel.MotorType.kBrushless
 kDrivetrainIdleMode = SparkBaseConfig.IdleMode.kBrake
-kDrivetrainPID = (0.2, 0, 0) # kP, kI, kD
+kDrivetrainPID = (0.2, 0, 0, ClosedLoopSlot.kSlot0) # kP, kI, kD
 
 # PhotonVision
 kCameraName = "Camera7459"
@@ -50,7 +50,7 @@ kRotationsPerMinuteToMetersPerSecond = kRotationsToMeters / 60
 kFeedbackSensor = FeedbackSensor.kPrimaryEncoder
 
 # Drivetrain Feedforward (kS = V, kV = V * s / m, kA = V * s^2 / m)
-kDrivetrainFeedForward = (0.30329, 2.9096, 0.35543) # kS, kV, kA
+kDrivetrainFeedForward = (0.30329, 2.9096, 0.35543, ClosedLoopSlot.kSlot0) # kS, kV, kA
 
 # Arduino
 kBaudRate = 9600
@@ -59,10 +59,12 @@ kBaudRate = 9600
 kLEDUSBPort = SerialPort.Port.kUSB1
 
 # Intake
-kIntakeAngleMotor = 1
-kIntakeTrackMotor = 12
+kIntakeAngleId = 1
+kIntakeTrackId = 12
 kPivotTimeDown = 0.35
 kPivotTimeUp = 0.5
 
 # Shooter
-kFlywheelFeedForward = (0, 0, 0) # kS, kV, kA
+kFlywheelId = 11
+kFlywheelFeedForward = (0, 0, 0, ClosedLoopSlot.kSlot0) # kS, kV, kA
+kFlywheelPID = (0.2, 0.1, 0, ClosedLoopSlot.kSlot0) # kP, kI, kD

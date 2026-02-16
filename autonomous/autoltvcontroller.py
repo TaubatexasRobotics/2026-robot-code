@@ -1,6 +1,6 @@
 import constants
 from commands2 import Command
-from wpimath.controller import LTVUnicycleController
+from wpimath.controller import LTVUnicycleController, SimpleMotorFeedforwardMeters
 from drivetrain import Drivetrain
 from wpimath.trajectory import TrajectoryConfig, TrajectoryGenerator
 from wpimath.geometry import Pose2d, Rotation2d, Translation2d
@@ -19,6 +19,7 @@ class AutoLTVController(Command):
         self.controller = LTVUnicycleController(0.020)
 
         self.drivetrain = drivetrain
+        self.feedforward = SimpleMotorFeedforwardMeters(*constants.kDrivetrainFeedForward[:3])
         self.addRequirements(drivetrain)
 
     def execute(self) -> None:
@@ -28,7 +29,7 @@ class AutoLTVController(Command):
 
         wheelSpeeds = constants.kDrivetrainKinematics.toWheelSpeeds(adjustedSpeeds)
 
-        self.drivetrain.driveWithWheelSpeeds(wheelSpeeds)
+        self.drivetrain.driveWithWheelSpeeds(wheelSpeeds, self.feedforward)
 
     def end(self, interrupted: bool) -> None:
         self.drivetrain.stop()
