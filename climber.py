@@ -1,20 +1,24 @@
-import wpilib
-import rev
-import phoenix6
-import phoenix5
+from phoenix5 import WPI_VictorSPX, ControlMode
+from commands2 import Command, Subsystem
+from commands2.cmd import run
 
+class Climber(Subsystem):
+    climber: WPI_VictorSPX = WPI_VictorSPX(1)
 
-class Climber:
-    def __init__(self):
-        self.left_motor = phoenix5.WPI_VictorSPX(1)
-        self.right_motor = phoenix5.WPI_VictorSPX(2)
-        self.climber = wpilib.MotorControllerGroup(self.left_motor, self.right_motor)
+    def __init__(self) -> None:
+        self.setDefaultCommand(run(lambda: self.stop()))
 
-    def climb(self, speed):
-        self.climber.set(1)
+    def clockwise(self) -> None:
+        self.climber.set(ControlMode.PercentOutput, 1)
 
-    def stop(self):
-        self.climber.set(0)
+    def stop(self) -> None:
+        self.climber.set(ControlMode.PercentOutput, 0)
 
-    def down(self):
-        self.climber.set(-1)
+    def counterclockwise(self) -> None:
+        self.climber.set(ControlMode.PercentOutput, -1)
+    
+    def up(self) -> Command:
+        return run(lambda: self.clockwise())
+
+    def down(self) -> Command:
+        return run(lambda: self.counterclockwise())
