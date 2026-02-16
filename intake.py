@@ -13,6 +13,7 @@ class Intake(Subsystem):
     def __init__(self) -> None:
         kPivotTimeUp = SmartDashboard.putNumber("up", 0.5)
         kPivotTimeDown = SmartDashboard.putNumber("down", 0.5)
+        self.pivot.setInverted(True)
 
     def isPivotUp(self) -> bool:
         return self.pivotUp
@@ -25,9 +26,9 @@ class Intake(Subsystem):
         kPivotTimeDown = SmartDashboard.getNumber("down", 0)
         
         if self.pivotUp:
-            percent = -1 if elapsed < kPivotTimeUp else 0
+            percent = 1 if elapsed < kPivotTimeUp else 0
         else:
-            percent = 1 if elapsed < kPivotTimeDown else 0
+            percent = -1 if elapsed < kPivotTimeDown else 0
         
         self.pivot.set(ControlMode.PercentOutput, percent)
 
@@ -55,10 +56,10 @@ class Intake(Subsystem):
         return self.run(lambda: self.startPivotDown())
 
     def collectGamePiece(self) -> None:
-        self.roller.set(-1)
+        self.roller.set(ControlMode.PercentOutput, -1)
 
     def stopGamePieceCollector(self) -> None:
-        self.roller.set(0)
+        self.roller.set(ControlMode.PercentOutput, 0)
 
     def releaseGamePiece(self) -> None:
-        self.roller.set(1)
+        self.roller.set(ControlMode.PercentOutput, 1)
