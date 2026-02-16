@@ -74,6 +74,9 @@ class LimelightCamera(Camera):
         result = self.limelight.get_results()
         parsed_result = parse_results(result)
 
+        if parsed_result is None:
+            return -1
+
         for target in parsed_result.fiducialResults:
             if target.fiducial_id == tag:
                 return target.target_x_degrees  # yaw

@@ -5,15 +5,12 @@ from autonomous.autoltvcontroller import AutoLTVController
 from autonomous.drivestraightpath import DriveStraightPath
 from commands2 import TimedCommandRobot, CommandScheduler, Command
 from typing import Optional
-from commands2.cmd import run
-from camera import Camera, PhotonVisionCamera, LimelightCamera
-from turret import Turret
 from commands2.button import JoystickButton
 from intake import Intake
 from pathplannerlib.auto import AutoBuilder
 from wpilib import SmartDashboard, SendableChooser, DriverStation
-from wpilib.interfaces import GenericHID
 from commands2.sysid import SysIdRoutine
+from shooter import Shooter
 
 
 class Robot(TimedCommandRobot):
@@ -21,7 +18,8 @@ class Robot(TimedCommandRobot):
     drivetrain: Drivetrain = Drivetrain()
     intake: Intake = Intake()
     autoChooser: SendableChooser = AutoBuilder.buildAutoChooser()
-    driverJoystick: GenericHID = GenericJoystick(constants.kJoystickDriverPort)
+    driverJoystick: GenericJoystick = GenericJoystick(constants.kJoystickDriverPort)
+    shooter: Shooter = Shooter()
 
     def robotInit(self) -> None:
         self.autoChooser.addOption("LTV Controller Test Auto", AutoLTVController(self.drivetrain))
@@ -58,7 +56,9 @@ class Robot(TimedCommandRobot):
     def autonomousInit(self) -> None:
         DriverStation.silenceJoystickConnectionWarning(True)
         self.autonomous = self.autoChooser.getSelected()
-        self.autonomous.schedule()
+        
+        if self.autonomous is not None:
+            self.autonomous.schedule()
 
     def autonomousExit(self) -> None:
         CommandScheduler.getInstance().cancelAll()
