@@ -1,5 +1,5 @@
 import constants
-from commands2 import Subsystem, Command
+from commands2 import Subsystem, Command, PIDCommand, SequentialCommandGroup
 from typing import Callable
 from camera import Camera
 from wpilib import DriverStation, Field2d, SmartDashboard
@@ -107,13 +107,8 @@ class Drivetrain(Subsystem):
         self.navx = AHRS.create_spi()
         self.navx.reset()
 
-        self.pid_forward = PIDController(*constants.kDrivetrainPID[:3])
-        self.pid_angular = PIDController(*constants.kDrivetrainPID[:3])
-
-        self.pid_angular.enableContinuousInput(-pi, pi)
-
         self.odometry = DifferentialDriveOdometry(
-            Rotation2d.fromDegrees(self.navx.getAngle()),
+            Rotation2d.fromDegrees(-self.navx.getAngle()),
             self.left_encoder.getPosition(),
             self.right_encoder.getPosition(),
             Pose2d(*constants.kInitialPose),
@@ -153,7 +148,7 @@ class Drivetrain(Subsystem):
 
     def resetPose(self, pose: Pose2d) -> None:
         self.odometry.resetPosition(
-            Rotation2d.fromDegrees(self.navx.getAngle()),
+            Rotation2d.fromDegrees(-self.navx.getAngle()),
             self.left_encoder.getPosition(),
             self.right_encoder.getPosition(),
             pose,
@@ -242,31 +237,54 @@ class Drivetrain(Subsystem):
         self.field.setRobotPose(self.odometry.getPose())
         SmartDashboard.putData("Field", self.field)
         self.odometry.update(
-            Rotation2d.fromDegrees(self.navx.getAngle()),
+            Rotation2d.fromDegrees(-self.navx.getAngle()),
             self.left_encoder.getPosition(),
             self.right_encoder.getPosition(),
         )
 
-    def aim(self, camera: Camera, tag: int) -> None:
+    def aim(self, camera: Camera, tag: int) -> Command:
         yaw = camera.getYawFromTag(tag)
-        turn = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
-        self.drivetrain.arcadeDrive(0, turn)
+        
+        if yaw != -1:
+            return PIDCommand(
+                PIDController(*constants.kDrivetrainPID[:3]),
+                yaw,
+                0,
+                lambda output: self.drivetrain.arcadeDrive(0, output),
+                self
+            )
+    
+        return self.run(lambda: self.drivetrain.arcadeDrive(0, 0))
 
-    def aimAndRange(self, camera: Camera, tag: int) -> None:
+    def aimAndRange(self, camera: Camera, tag: int) -> Command:
         yaw, range = camera.getYawAndRangeFromTag(tag)
-        range = (
-            self.pid_forward.calculate(range, constants.kGoalRangeMeters)
-            if yaw != -1
-            else 0
-        )
-        rotation = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
-        self.drivetrain.arcadeDrive(range, rotation)
 
-    def rotate(self, angle: float) -> None:
-        self.pid_angular.setSetpoint(angle)
-        self.drivetrain.arcadeDrive(
-            0,
-            self.pid_angular.calculate(
-                self.navx.getAngle(), self.pid_angular.getSetpoint()
-            ),
+        if yaw != -1:
+            return SequentialCommandGroup([
+                PIDCommand(
+                    PIDController(*constants.kDrivetrainPID),
+                    yaw,
+                    0,
+                    lambda output: self.drivetrain.arcadeDrive(0, output),
+                    self
+                ),
+                PIDCommand(
+                    PIDController(*constants.kDrivetrainPID),
+                    range,
+                    constants.kGoalRangeMeters,
+                    lambda output: self.drivetrain.arcadeDrive(output, 0),
+                    self
+                ),
+            ])
+
+        return self.run(lambda: self.drivetrain.arcadeDrive(0, 0))
+
+
+    def rotate(self, angle: float) -> Command:
+        return PIDCommand(
+            PIDController(*constants.kDrivetrainPID),
+            self.navx.getAngle(),
+            angle,
+            lambda output: self.drivetrain.arcadeDrive(0, output),
+            self
         )
