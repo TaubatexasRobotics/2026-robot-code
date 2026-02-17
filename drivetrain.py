@@ -27,7 +27,6 @@ from commands2.sysid import SysIdRoutine
 from wpimath.units import volts
 from wpilib import RobotController
 from wpilib.sysid import SysIdRoutineLog
-from math import pi
 
 
 class Drivetrain(Subsystem):
@@ -135,6 +134,8 @@ class Drivetrain(Subsystem):
             SysIdRoutine.Mechanism(self.sysIdDriveVoltage, self.log, self),
         )
 
+        SmartDashboard.putBoolean("Angular Mode", False)
+
             
     def stop(self) -> None:
         self.drivetrain.arcadeDrive(0, 0)
@@ -211,8 +212,10 @@ class Drivetrain(Subsystem):
         return self.run(lambda: self.drivetrain.tankDrive(left_speed(), right_speed()))
     
     def sysIdDriveVoltage(self, voltage: volts) -> None:
+        angularMode: bool = SmartDashboard.getBoolean("Angular Mode", False)
+
         self.left_front_motor.setVoltage(voltage)
-        self.right_front_motor.setVoltage(voltage)
+        self.right_front_motor.setVoltage(voltage if not angularMode else -voltage)
 
     def log(self, sys_id_routine: SysIdRoutineLog) -> None:
         sys_id_routine.motor("drive-left").voltage(
