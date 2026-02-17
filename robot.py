@@ -62,7 +62,7 @@ class Robot(TimedCommandRobot):
         DriverStation.silenceJoystickConnectionWarning(True)
         self.autonomous = self.autoChooser.getSelected()
 
-        if self.autonomous is not None:
+        if self.autonomous:
             self.autonomous.schedule()
 
     def autonomousExit(self) -> None:

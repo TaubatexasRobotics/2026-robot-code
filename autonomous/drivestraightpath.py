@@ -5,11 +5,11 @@ from wpimath import units
 
 class DriveStraightPath(WaitCommand):
     def __init__(
-        self, drivetrain: Drivetrain, seconds: units.seconds, backward: bool = False
+        self, drivetrain: Drivetrain, seconds: units.seconds, invert: bool = False
     ) -> None:
         super().__init__(seconds)
         self.drivetrain = drivetrain
-        self.backwards = backward
+        self.invert = invert
 
         self.addRequirements(drivetrain)
 
@@ -17,7 +17,7 @@ class DriveStraightPath(WaitCommand):
         self.drivetrain.stop()
 
     def execute(self) -> None:
-        if self.backward:
+        if self.invert:
             self.drivetrain.backward()
         else:
             self.drivetrain.forward()
