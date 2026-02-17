@@ -22,8 +22,12 @@ class Robot(TimedCommandRobot):
     shooter: Shooter = Shooter()
 
     def robotInit(self) -> None:
-        self.autoChooser.addOption("LTV Controller Test Auto", AutoLTVController(self.drivetrain))
-        self.autoChooser.addOption("Drive Straight Path", DriveStraightPath(self.drivetrain, 5))
+        self.autoChooser.addOption(
+            "LTV Controller Test Auto", AutoLTVController(self.drivetrain)
+        )
+        self.autoChooser.addOption(
+            "Drive Straight Path", DriveStraightPath(self.drivetrain, 5)
+        )
         SmartDashboard.putData("Auto Chooser", self.autoChooser)
 
     def teleopInit(self) -> None:
@@ -53,16 +57,18 @@ class Robot(TimedCommandRobot):
                 lambda: self.driverJoystick.getRightXAxis(),
             )
         )
-        
+
     def autonomousInit(self) -> None:
         DriverStation.silenceJoystickConnectionWarning(True)
         self.autonomous = self.autoChooser.getSelected()
-        
+
         if self.autonomous is not None:
             self.autonomous.schedule()
 
     def autonomousExit(self) -> None:
         CommandScheduler.getInstance().cancelAll()
-    
+
     def testInit(self) -> None:
-        JoystickButton(self.driverJoystick, 1).onTrue(self.shooter.setFlywheelBySetpointCommand())
+        JoystickButton(self.driverJoystick, 1).onTrue(
+            self.shooter.setFlywheelBySetpointCommand()
+        )

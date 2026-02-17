@@ -2,6 +2,7 @@ from phoenix5 import WPI_VictorSPX, ControlMode
 from commands2 import Command, Subsystem
 from commands2.cmd import run
 
+
 class Climber(Subsystem):
     climber: WPI_VictorSPX = WPI_VictorSPX(1)
 
@@ -16,7 +17,7 @@ class Climber(Subsystem):
 
     def counterclockwise(self) -> None:
         self.climber.set(ControlMode.PercentOutput, -1)
-    
+
     def up(self) -> Command:
         return run(lambda: self.clockwise())
 

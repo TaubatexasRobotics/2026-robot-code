@@ -7,8 +7,8 @@ from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController, SimpleMotorFeedforwardMeters
 from wpimath.kinematics import (
-    DifferentialDriveOdometry, 
-    DifferentialDriveWheelSpeeds, 
+    DifferentialDriveOdometry,
+    DifferentialDriveWheelSpeeds,
     ChassisSpeeds,
 )
 from wpimath.geometry import Pose2d, Rotation2d
@@ -43,11 +43,11 @@ class Drivetrain(Subsystem):
         self.right_back_motor = SparkMax(
             constants.kRightBackId, constants.kDrivetrainMotorType
         )
-        
+
         self.drivetrain = DifferentialDrive(
             self.left_front_motor, self.right_front_motor
         )
-        
+
         self.drivetrain.setSafetyEnabled(True)
         self.drivetrain.setExpiration(0.1)
         self.drivetrain.setMaxOutput(1.0)
@@ -126,7 +126,7 @@ class Drivetrain(Subsystem):
             PPLTVController(0.02),
             pathConfig,
             self.shouldFlipPath,
-            self
+            self,
         )
 
         self.sys_id_routine = SysIdRoutine(
@@ -136,7 +136,6 @@ class Drivetrain(Subsystem):
 
         SmartDashboard.putBoolean("Angular Mode", False)
 
-            
     def stop(self) -> None:
         self.drivetrain.arcadeDrive(0, 0)
 
@@ -158,7 +157,11 @@ class Drivetrain(Subsystem):
     def getPose(self) -> Pose2d:
         return self.odometry.getPose()
 
-    def driveWithWheelSpeeds(self, speeds: DifferentialDriveWheelSpeeds, feedforward: SimpleMotorFeedforwardMeters) -> None:
+    def driveWithWheelSpeeds(
+        self,
+        speeds: DifferentialDriveWheelSpeeds,
+        feedforward: SimpleMotorFeedforwardMeters,
+    ) -> None:
         left_feedforward = feedforward.calculate(speeds.left)
         right_feedforward = feedforward.calculate(speeds.right)
 
@@ -174,7 +177,7 @@ class Drivetrain(Subsystem):
             ClosedLoopSlot.kSlot0,
             right_feedforward,
         )
-    
+
     def driveWithRelativeSpeeds(self, chassisSpeeds: ChassisSpeeds) -> None:
         wheelSpeeds = constants.kDrivetrainKinematics.toWheelSpeeds(chassisSpeeds)
         self.left_closed_loop.setSetpoint(
@@ -195,22 +198,33 @@ class Drivetrain(Subsystem):
                 self.left_encoder.getVelocity(), self.right_encoder.getVelocity()
             )
         )
-    
+
     def forward(self) -> Command:
         return self.run(lambda: self.drivetrain.arcadeDrive(1, 0))
 
     def backward(self) -> Command:
         return self.run(lambda: self.drivetrain.arcadeDrive(-1, 0))
 
-    def arcadeDrive(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
+    def arcadeDrive(
+        self, speed: Callable[[], float], rotate: Callable[[], float]
+    ) -> Command:
         return self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate()))
 
-    def cheesyDrive(self, speed: Callable[[], float], rotate: Callable[[], float], allowTurnInPlace: bool) -> Command:
-        return self.run(lambda: self.drivetrain.curvatureDrive(speed(), rotate(), allowTurnInPlace))
+    def cheesyDrive(
+        self,
+        speed: Callable[[], float],
+        rotate: Callable[[], float],
+        allowTurnInPlace: bool,
+    ) -> Command:
+        return self.run(
+            lambda: self.drivetrain.curvatureDrive(speed(), rotate(), allowTurnInPlace)
+        )
 
-    def tankDrive(self, left_speed: Callable[[], float], right_speed: Callable[[], float]) -> Command:
+    def tankDrive(
+        self, left_speed: Callable[[], float], right_speed: Callable[[], float]
+    ) -> Command:
         return self.run(lambda: self.drivetrain.tankDrive(left_speed(), right_speed()))
-    
+
     def sysIdDriveVoltage(self, voltage: volts) -> None:
         angularMode: bool = SmartDashboard.getBoolean("Angular Mode", False)
 
@@ -247,41 +261,42 @@ class Drivetrain(Subsystem):
 
     def aim(self, camera: Camera, tag: int) -> Command:
         yaw = camera.getYawFromTag(tag)
-        
+
         if yaw != -1:
             return PIDCommand(
                 PIDController(*constants.kDrivetrainPID[:3]),
                 yaw,
                 0,
                 lambda output: self.drivetrain.arcadeDrive(0, output),
-                self
+                self,
             )
-    
+
         return self.run(lambda: self.drivetrain.arcadeDrive(0, 0))
 
     def aimAndRange(self, camera: Camera, tag: int) -> Command:
         yaw, range = camera.getYawAndRangeFromTag(tag)
 
         if yaw != -1:
-            return SequentialCommandGroup([
-                PIDCommand(
-                    PIDController(*constants.kDrivetrainPID),
-                    yaw,
-                    0,
-                    lambda output: self.drivetrain.arcadeDrive(0, output),
-                    self
-                ),
-                PIDCommand(
-                    PIDController(*constants.kDrivetrainPID),
-                    range,
-                    constants.kGoalRangeMeters,
-                    lambda output: self.drivetrain.arcadeDrive(output, 0),
-                    self
-                ),
-            ])
+            return SequentialCommandGroup(
+                [
+                    PIDCommand(
+                        PIDController(*constants.kDrivetrainPID),
+                        yaw,
+                        0,
+                        lambda output: self.drivetrain.arcadeDrive(0, output),
+                        self,
+                    ),
+                    PIDCommand(
+                        PIDController(*constants.kDrivetrainPID),
+                        range,
+                        constants.kGoalRangeMeters,
+                        lambda output: self.drivetrain.arcadeDrive(output, 0),
+                        self,
+                    ),
+                ]
+            )
 
         return self.run(lambda: self.drivetrain.arcadeDrive(0, 0))
-
 
     def rotate(self, angle: float) -> Command:
         return PIDCommand(
@@ -289,5 +304,5 @@ class Drivetrain(Subsystem):
             self.navx.getAngle(),
             angle,
             lambda output: self.drivetrain.arcadeDrive(0, output),
-            self
+            self,
         )

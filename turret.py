@@ -2,6 +2,7 @@ from rev import SparkMax, SparkLowLevel
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
 from commands2 import Subsystem
 
+
 class Turret(Subsystem):
     def __init__(self):
         self.turret_motor = SparkMax(51, SparkLowLevel.MotorType.kBrushless)
@@ -22,10 +23,7 @@ class Turret(Subsystem):
     def update(self):
         if self.target_RPM == 0:
             return
-        output = self.pid.calculate(
-            self.encoder.getVelocity(),
-            self.target_RPM
-        )
+        output = self.pid.calculate(self.encoder.getVelocity(), self.target_RPM)
         output += self.feedforward.calculate(self.target_RPM)
         output = max(min(output, 1.0), -1.0)
         self.turret_motor.set(output)

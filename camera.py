@@ -10,6 +10,7 @@ from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 from wpimath.units import degreesToRadians
 from wpilib import RobotBase
 
+
 class Camera(ABC):
     @abstractmethod
     def getYawFromTag(self, tag: int) -> float:
@@ -60,7 +61,7 @@ class PhotonVisionCamera(Camera):
 class LimelightCamera(Camera):
     def __init__(self, camera: str) -> None:
         self.limelight = None
-        
+
         if not RobotBase.isSimulation():
             self.limelight = Limelight(camera)
             self.limelight.pipeline_switch(0)
@@ -70,7 +71,7 @@ class LimelightCamera(Camera):
     def getYawFromTag(self, tag: int) -> float:
         if self.limelight is None:
             return -1
-        
+
         result = self.limelight.get_results()
         parsed_result = parse_results(result)
 
@@ -85,6 +86,7 @@ class LimelightCamera(Camera):
 
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
+
 
 class Pixy2(Camera):
     pass

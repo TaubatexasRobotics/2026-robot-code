@@ -10,16 +10,18 @@ class AutoLTVController(Command):
     def __init__(self, drivetrain: Drivetrain) -> None:
         super().__init__()
         self.trajectory = TrajectoryGenerator.generateTrajectory(
-           Pose2d(0, 0, Rotation2d(0)), 
-           [Translation2d(1, 1), Translation2d(2, -1)],
-           Pose2d(3, 0, Rotation2d(0)), 
-           TrajectoryConfig(0.5, 0.5)
+            Pose2d(0, 0, Rotation2d(0)),
+            [Translation2d(1, 1), Translation2d(2, -1)],
+            Pose2d(3, 0, Rotation2d(0)),
+            TrajectoryConfig(0.5, 0.5),
         )
         self.reference = self.trajectory.sample(3)
         self.controller = LTVUnicycleController(0.020)
 
         self.drivetrain = drivetrain
-        self.feedforward = SimpleMotorFeedforwardMeters(*constants.kDrivetrainFeedForward[:3])
+        self.feedforward = SimpleMotorFeedforwardMeters(
+            *constants.kDrivetrainFeedForward[:3]
+        )
         self.addRequirements(drivetrain)
 
     def execute(self) -> None:

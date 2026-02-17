@@ -18,7 +18,7 @@ kRightBackId = 54
 kDrivetrainSmartCurrentLimit = 40
 kDrivetrainMotorType = SparkLowLevel.MotorType.kBrushless
 kDrivetrainIdleMode = SparkBaseConfig.IdleMode.kBrake
-kDrivetrainPID = (0.2, 0, 0, ClosedLoopSlot.kSlot0) # kP, kI, kD
+kDrivetrainPID = (0.2, 0, 0, ClosedLoopSlot.kSlot0)  # kP, kI, kD
 
 # PhotonVision
 kCameraName = "Camera7459"
@@ -29,7 +29,11 @@ kGoalRangeMeters = 1
 
 # Limelight 3A
 kLimelightRemoteHost = "172.29.0.1"
-kLimelightPortForwarder = (5807, kLimelightRemoteHost, 5807)  # port, remoteHost, remotePort
+kLimelightPortForwarder = (
+    5807,
+    kLimelightRemoteHost,
+    5807,
+)  # port, remoteHost, remotePort
 
 # Drivetrain Odometry
 kInitialPose = (0, 0, 0)
@@ -50,7 +54,7 @@ kRotationsPerMinuteToMetersPerSecond = kRotationsToMeters / 60
 kFeedbackSensor = FeedbackSensor.kPrimaryEncoder
 
 # Drivetrain Feedforward (kS = V, kV = V * s / m, kA = V * s^2 / m)
-kDrivetrainFeedForward = (0.30329, 2.9096, 0.35543, ClosedLoopSlot.kSlot0) # kS, kV, kA
+kDrivetrainFeedForward = (0.30329, 2.9096, 0.35543, ClosedLoopSlot.kSlot0)  # kS, kV, kA
 
 # Arduino
 kBaudRate = 9600
@@ -66,5 +70,5 @@ kPivotTimeUp = 0.5
 
 # Shooter
 kFlywheelId = 11
-kFlywheelFeedForward = (0, 0, 0, ClosedLoopSlot.kSlot0) # kS, kV, kA
-kFlywheelPID = (0.2, 0.1, 0, ClosedLoopSlot.kSlot0) # kP, kI, kD
+kFlywheelFeedForward = (0, 0, 0, ClosedLoopSlot.kSlot0)  # kS, kV, kA
+kFlywheelPID = (0.2, 0.1, 0, ClosedLoopSlot.kSlot0)  # kP, kI, kD
