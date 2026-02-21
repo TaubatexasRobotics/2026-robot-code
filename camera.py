@@ -119,5 +119,6 @@ class Pixy2:
             age=int(final_data[13])
         )
 
-class DriverCamera(Camera):
-    pass
+class DriverCamera:
+    def __init__(self) -> None:
+        CameraServer().launch()
