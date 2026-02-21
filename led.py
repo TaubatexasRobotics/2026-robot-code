@@ -1,19 +1,19 @@
 from wpilib import SerialPort
+from dataclasses import dataclass
 import constants
 
-
+@dataclass
 class LEDController:
-    def __init__(self) -> None:
-        self.arduino = SerialPort(constants.kBaudRate, constants.kLEDUSBPort)
+    arduino: SerialPort = SerialPort(constants.kBaudRate, constants.kLEDUSBPort)
 
-    def activateRedColor(self) -> None:
-        changeColor("r")
+    def red(self) -> None:
+        self.changeColor("r")
 
-    def activateGreenColor(self) -> None:
-        changeColor("g")
+    def green(self) -> None:
+        self.changeColor("g")
 
-    def activateBlueColor(self) -> None:
-        changeColor("b")
+    def blue(self) -> None:
+        self.changeColor("b")
 
     def changeColor(char: str) -> None:
         byte_obj = char.encode("ascii")

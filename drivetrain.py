@@ -1,7 +1,7 @@
 import constants
 from commands2 import Subsystem, Command, PIDCommand, SequentialCommandGroup
 from typing import Callable
-from camera import Camera
+from camera import AprilTagCamera
 from wpilib import DriverStation, Field2d, SmartDashboard
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
@@ -259,7 +259,7 @@ class Drivetrain(Subsystem):
             self.right_encoder.getPosition(),
         )
 
-    def aim(self, camera: Camera, tag: int) -> Command:
+    def aim(self, camera: AprilTagCamera, tag: int) -> Command:
         yaw = camera.getYawFromTag(tag)
 
         if yaw != -1:
@@ -273,7 +273,7 @@ class Drivetrain(Subsystem):
 
         return self.run(lambda: self.drivetrain.arcadeDrive(0, 0))
 
-    def aimAndRange(self, camera: Camera, tag: int) -> Command:
+    def aimAndRange(self, camera: AprilTagCamera, tag: int) -> Command:
         yaw, range = camera.getYawAndRangeFromTag(tag)
 
         if yaw != -1:

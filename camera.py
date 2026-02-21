@@ -1,6 +1,7 @@
 import constants
 from photonlibpy import PhotonCamera
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
+from dataclasses import dataclass
 from utils import Utils
 from abc import ABC, abstractmethod
 from limelight import Limelight
@@ -8,10 +9,10 @@ from limelightresults import parse_results
 from wpinet import PortForwarder
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 from wpimath.units import degreesToRadians
-from wpilib import RobotBase
+from wpilib import RobotBase, SerialPort, CameraServer
 
 
-class Camera(ABC):
+class AprilTagCamera(ABC):
     @abstractmethod
     def getYawFromTag(self, tag: int) -> float:
         pass
@@ -20,8 +21,16 @@ class Camera(ABC):
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         pass
 
+class PixyObject(GenericObject):
+    sig: int
+    x: int
+    y: int
+    width: int
+    height: int
+    index: int
+    age: int
 
-class PhotonVisionCamera(Camera):
+class PhotonVisionCamera(AprilTagCamera):
     def __init__(self, camera: str) -> None:
         self.camera = PhotonCamera(camera)
 
@@ -58,7 +67,7 @@ class PhotonVisionCamera(Camera):
         return -1, -1
 
 
-class LimelightCamera(Camera):
+class LimelightCamera(AprilTagCamera):
     def __init__(self, camera: str) -> None:
         self.limelight = None
 
@@ -87,10 +96,28 @@ class LimelightCamera(Camera):
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
 
+@dataclass
+class Pixy2:
+    arduino: SerialPort = SerialPort(constants.kBaudRate, constants.kLEDUSBPort)
 
-class Pixy2(Camera):
-    pass
+    def getCloserGamePiece(self) -> Optional[PixyObject]:
+        object_transform_data: str = Utils.readString(self.arduino)
 
+        if len(object_transform_data) <= 0:
+            return
+        
+        final_data: List[str] = object_transform_data.split(":")
+
+        # sig: X x: X y: X width: X height: X index: X age: X
+        return PixyObject(
+            sig=int(final_data[1]),
+            x=int(final_data[3]),
+            y=int(final_data[5]),
+            width=int(final_data[7]),
+            height=int(final_data[9]),
+            index=int(final_data[11]),
+            age=int(final_data[13])
+        )
 
 class DriverCamera(Camera):
     pass
