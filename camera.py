@@ -101,12 +101,14 @@ class Pixy2:
     arduino: SerialPort = SerialPort(constants.kBaudRate, constants.kLEDUSBPort)
 
     def getCloserGamePiece(self) -> Optional[PixyObject]:
-        object_transform_data: str = Utils.readString(self.arduino)
+        all_object_transform_data: str = Utils.readString(self.arduino)
 
         if len(object_transform_data) <= 0:
             return
         
-        final_data: List[str] = object_transform_data.split(":")
+        object_transform_data: List[str] = all_object_transform_data.splitlines()
+
+        final_data: List[str] = object_transform_data[-1].split(":")
 
         # sig: X x: X y: X width: X height: X index: X age: X
         return PixyObject(
