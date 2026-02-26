@@ -1,4 +1,5 @@
 import constants
+import wpilib
 from photonlibpy import PhotonCamera
 from typing import Optional, Tuple, List
 from dataclasses import dataclass
@@ -95,32 +96,32 @@ class LimelightCamera(AprilTagCamera):
 
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
-
-@dataclass
 class Pixy2:
-    arduino: SerialPort = SerialPort(constants.kBaudRate, constants.kLEDUSBPort)
+    PIXY_I2C_ADDRESS = 0x54
 
-    def getCloserGamePiece(self) -> Optional[PixyObject]:
-        all_object_transform_data: str = Utils.readString(self.arduino)
+    def __init__(self, port=wpilib.I2C.Port.kOnboard):
+        self.i2c = wpilib.I2C(port, self.PIXY_I2C_ADDRESS)
 
-        if len(object_transform_data) <= 0:
-            return
+    def get_version(self):
+        # Comando para getVersion (protocolo Pixy2)
+        request = bytearray([0xae, 0xc1, 0x0e, 0x00])
+        self.i2c.writeBulk(request)
+
+        response = bytearray(20)
+        self.i2c.readOnly(response)
+
+        return response
+
+    def set_lamp(self, upper, lower):
+        # Liga/desliga LEDs
+        request = bytearray([0xae, 0xc1, 0x16, 0x02, upper, lower])
+        self.i2c.writeBulk(request)
+
+    def set_led(self, r, g, b):
+        # Define cor RGB
+        request = bytearray([0xae, 0xc1, 0x14, 0x03, r, g, b])
+        self.i2c.writeBulk(request)
         
-        object_transform_data: List[str] = all_object_transform_data.splitlines()
-
-        final_data: List[str] = object_transform_data[-1].split(":")
-
-        # sig: X x: X y: X width: X height: X index: X age: X
-        return PixyObject(
-            sig=int(final_data[1]),
-            x=int(final_data[3]),
-            y=int(final_data[5]),
-            width=int(final_data[7]),
-            height=int(final_data[9]),
-            index=int(final_data[11]),
-            age=int(final_data[13])
-        )
-
 class DriverCamera:
     def __init__(self) -> None:
         CameraServer().launch()
