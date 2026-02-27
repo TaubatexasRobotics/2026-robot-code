@@ -1,5 +1,4 @@
 import constants
-import wpilib
 from photonlibpy import PhotonCamera
 from typing import Optional, Tuple, List
 from dataclasses import dataclass
@@ -96,32 +95,7 @@ class LimelightCamera(AprilTagCamera):
 
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
+
+@dataclass
 class Pixy2:
-    PIXY_I2C_ADDRESS = 0x54
-
-    def __init__(self, port=wpilib.I2C.Port.kOnboard):
-        self.i2c = wpilib.I2C(port, self.PIXY_I2C_ADDRESS)
-
-    def get_version(self):
-        # Comando para getVersion (protocolo Pixy2)
-        request = bytearray([0xae, 0xc1, 0x0e, 0x00])
-        self.i2c.writeBulk(request)
-
-        response = bytearray(20)
-        self.i2c.readOnly(response)
-
-        return response
-
-    def set_lamp(self, upper, lower):
-        # Liga/desliga LEDs
-        request = bytearray([0xae, 0xc1, 0x16, 0x02, upper, lower])
-        self.i2c.writeBulk(request)
-
-    def set_led(self, r, g, b):
-        # Define cor RGB
-        request = bytearray([0xae, 0xc1, 0x14, 0x03, r, g, b])
-        self.i2c.writeBulk(request)
-        
-class DriverCamera:
-    def __init__(self) -> None:
-        CameraServer().launch()
+    
