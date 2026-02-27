@@ -1,5 +1,6 @@
 #include <FastLED.h>
 #include <Pixy2.h>
+
 #define LED_PIN 7
 #define NUM_LEDS 30
 
@@ -12,17 +13,23 @@ void changeColor(int red, int green, int blue) {
   FastLED.show();
 }
 
-void setup() {
-  Serial.begin(9600);
-  FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
-  changeColor(255, 0, 0);
-  pixy.init();
-}
-
-void loop() {
-  {int i;
+void readPixyData() {
+  int i;
   pixy.ccc.getBlocks();
 
+  if (pixy.ccc.numBlocks) {
+    Serial.print("Detected ");
+    Serial.println(pixy.ccc.numBlocks);
+    for (i = 0; i < pixy.ccc.numBlocks; i++) {
+      Serial.print("  block ");
+      Serial.print(i);
+      Serial.print(": ");
+      pixy.ccc.blocks[i].print();
+    }
+  }
+}
+
+void updateSelectedColor() {
   if (Serial.available() > 0) {
     byte received = Serial.read();
     if (received == 'r') {
@@ -34,16 +41,14 @@ void loop() {
     }
   }
 }
-  if (pixy.ccc.numBlocks)
-  {
-    Serial.print("Detected ");
-    Serial.println(pixy.ccc.numBlocks);
-    for (i=0; i<pixy.ccc.numBlocks; i++)
-    {
-      Serial.print("  block ");
-      Serial.print(i);
-      Serial.print(": ");
-      pixy.ccc.blocks[i].print();
-    }
-  }  
+
+void setup() {
+  Serial.begin(9600);
+  FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
+  changeColor(255, 0, 0);
+  pixy.init();
+}
+
+void loop() {
+  updateSelectedColor();
 }
