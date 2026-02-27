@@ -1,56 +1,55 @@
-import wpilib
 import rev
 import wpimath.controller
+from wpilib import SmartDashboard
+
+gear_ratio = 11.52
+
+def clamp(value, min_value, max_value):
+    return max(min(value, max_value), min_value)
 
 class Crest:
     def __init__(self):
-        self.crest_motor = rev.SparkMax(55, rev.SparkMax.MotorType.kBrushless)
-        self.encoder = self.crest_motor.getEncoder()
+        self.motor = rev.SparkMax(53, rev.SparkMax.MotorType.kBrushless)
+        self.encoder = self.motor.getEncoder()
 
-        self.crest_pid = wpimath.controller.PIDController(0.006, 0.0, 0.0)
-        self.crest_pid.setTolerance(0.1)
+        self.pid = wpimath.controller.PIDController(0.006, 0.0, 0.0)
+        self.pid.setTolerance(0.1)
         self.encoder.setPosition(0)
 
-    def get_posicao_graus(self):
-        return (self.encoder.getPosition() * 11,52 / 360)
+    
+    def getPosition(self) -> float:
+        return self.encoder.getPosition() * gear_ratio * 360
 
-    def testeMotor(self):
-        setpoint = 20 #graus
-        posicao_atual = (self.encoder.getPosition() * 11,52 / 360)
-              
-        output = self.crest_pid.calculate(posicao_atual, setpoint)
-        
-        # Limite de segurança
-        output = max(min(output, 0.4), -0.4) 
+    def update_dashboard(self):
+        SmartDashboard.putData("PID", self.pid)
+        SmartDashboard.putNumber("crest encoder", self.encoder.getPosition())
+        SmartDashboard.putNumber("crest position", float(self.getPosition()))
+        # self.pid.setSetpoint(self.setpoint)
+        print(self.pid.getSetpoint())
 
-        if not self.crest_pid.atSetpoint():
-            self.crest_motor.set(output)
-        else:
-            self.crest_motor.set(0)
-        
-        print(f"Graus: {posicao_atual:.2f} | Out: {output:.2f}")
+    def move_to_setpoint(self):
+        current_position = self.getPosition()
+        motor_value = self.pid.calculate(current_position)
+        motor_value = clamp(motor_value, -0.4, 0.4)
+        self.motor.set(motor_value)
 
-    def Contrario(self):
-        setpoint = 0  # 1/4 de volta em graus
-        posicao_atual = (self.encoder.getPosition() * 11,52 / 360)
-      
-        
-        output = self.crest_pid.calculate(posicao_atual, setpoint)
-        
-        # Limite de segurança
-        output = max(min(output, 0.4), -0.4) 
+    def move_to(self, setpoint):
+        current_position = self.getPosition()
+        motor_value = self.pid.calculate(current_position, setpoint)
+        motor_value = clamp(motor_value, -0.4, 0.4)
+        self.motor.set(motor_value)
 
-        if not self.crest_pid.atSetpoint():
-            self.crest_motor.set(output)
-        else:
-            self.crest_motor.set(0)
-        
-        print(f"Graus: {posicao_atual:.2f} | Out: {output:.2f}")
+    def up(self):
+        self.move_to(20)
+
+    def down(self):
+        self.move_to(0)
         
     def subir(self):    
-      self.crest_motor.set(0.2)
+      self.motor.set(0.2)
     
     def descer(self):
-        self.crest_motor.set(-0.05)
-    def parar(self):
-        self.crest_motor.set(0)
+        self.motor.set(-0.05)
+
+    def stop(self):
+        self.motor.stopMotor()
