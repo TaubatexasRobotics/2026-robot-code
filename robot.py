@@ -29,9 +29,6 @@ class Robot(TimedCommandRobot):
             "Drive Straight Path", DriveStraightPath(self.drivetrain, 5)
         )
         SmartDashboard.putData("Auto Chooser", self.autoChooser)
-        self.pixy = Pixy2()
-        self.pixy.set_lamp(1, 1)
-        self.pixy.set_led(200, 30, 255) 
 
     def teleopInit(self) -> None:
         JoystickButton(self.driverJoystick, 5).onTrue(self.intake.up())
@@ -70,7 +67,7 @@ class Robot(TimedCommandRobot):
 
     def autonomousPeriodic(self) -> None:
         pass
-    
+
     def autonomousExit(self) -> None:
         CommandScheduler.getInstance().cancelAll()
 

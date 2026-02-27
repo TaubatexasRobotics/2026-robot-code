@@ -1,7 +1,6 @@
 import constants
 from photonlibpy import PhotonCamera
 from typing import Optional, Tuple, List
-from dataclasses import dataclass
 from utils import Utils
 from abc import ABC, abstractmethod
 from limelight import Limelight
@@ -9,6 +8,8 @@ from limelightresults import parse_results
 from wpinet import PortForwarder
 from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
 from wpimath.units import degreesToRadians
+from pixy2py.pixy2 import Pixy2
+from pixy2py.pixy2ccc import Pixy2CCC
 from wpilib import RobotBase, SerialPort, CameraServer
 
 
@@ -20,15 +21,6 @@ class AprilTagCamera(ABC):
     @abstractmethod
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         pass
-
-class PixyObject(GenericObject):
-    sig: int
-    x: int
-    y: int
-    width: int
-    height: int
-    index: int
-    age: int
 
 class PhotonVisionCamera(AprilTagCamera):
     def __init__(self, camera: str) -> None:
@@ -96,6 +88,26 @@ class LimelightCamera(AprilTagCamera):
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
 
-@dataclass
-class Pixy2:
-    
+class PixyFuelDetector:
+    def __init__(self) -> None:
+        self.pixy = Pixy2(Pixy2.LinkType.SPI)
+        self.pixy.init()
+        self.pixy.setLamp(1, 1)
+        self.pixy.setLED(255, 255, 255)
+
+    def getBiggestBlock(self) -> Optional[Pixy2CCC.Block]:
+        blockCount: int = pixy.getCCC().getBlocks(False, Pixy2CCC.CCC_SIG1, 25)
+        print("Found " + str(blockCount) + " blocks!")
+        if blockCount <= 0:
+            return None
+
+        blocks = self.pixy.getCCC().getBlockCache()
+        largestBlock: Optional[PixyCCC.Block] = None
+
+        for block in blocks:
+            if largestBlock is None:
+                largestBlock = block
+            elif block.getWidth() > largestBlock.getWidth():
+                largestBlock = block
+
+        return largestBlock
