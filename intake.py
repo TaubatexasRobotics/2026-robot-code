@@ -1,18 +1,19 @@
 from phoenix5 import WPI_VictorSPX, ControlMode
-from commands2 import Subsystem
+from commands2 import Subsystem, Command
 from wpilib import Timer, SmartDashboard
 import constants
 
 
 class Intake(Subsystem):
-    def __init__(self) -> None:
-        self.pivot = WPI_VictorSPX(constants.kIntakeAngleMotor)
-        self.roller = WPI_VictorSPX(constants.kIntakeTrackMotor)
-        self.pivotUp = False
-        self.lastBurstTime = 0
+    pivot: WPI_VictorSPX = WPI_VictorSPX(constants.kIntakeAngleId)
+    roller: WPI_VictorSPX = WPI_VictorSPX(constants.kIntakeTrackId)
+    pivotUp: bool = False
+    lastBurstTime: float = 0.0
 
-        kPivotTimeUp = SmartDashboard.putNumber("up", 0.5)
-        kPivotTimeDown = SmartDashboard.putNumber("down", 0.5)
+    def __init__(self) -> None:
+        SmartDashboard.putNumber("up", 0.5)
+        SmartDashboard.putNumber("down", 0.5)
+        self.pivot.setInverted(True)
 
     def isPivotUp(self) -> bool:
         return self.pivotUp
@@ -23,12 +24,12 @@ class Intake(Subsystem):
 
         kPivotTimeUp = SmartDashboard.getNumber("up", 0)
         kPivotTimeDown = SmartDashboard.getNumber("down", 0)
-        
+
         if self.pivotUp:
-            percent = -1 if elapsed < kPivotTimeUp else 0
+            percent = 1 if elapsed < kPivotTimeUp else 0
         else:
-            percent = 1 if elapsed < kPivotTimeDown else 0
-        
+            percent = -1 if elapsed < kPivotTimeDown else 0
+
         self.pivot.set(ControlMode.PercentOutput, percent)
 
     def startPivotUp(self) -> None:
@@ -44,15 +45,21 @@ class Intake(Subsystem):
     def startPivotDown(self) -> None:
         if not self.pivotUp:
             return
-        
+
         self.pivotUp = False
         self.lastBurstTime = Timer.getFPGATimestamp()
 
-    def get(self) -> None:
-        self.roller.set(-1)
+    def up(self) -> Command:
+        return self.run(lambda: self.startPivotUp())
 
-    def stop(self) -> None:
-        self.roller.set(0)
+    def down(self) -> Command:
+        return self.run(lambda: self.startPivotDown())
 
-    def release(self) -> None:
-        self.roller.set(1)
+    def collectGamePiece(self) -> None:
+        self.roller.set(ControlMode.PercentOutput, -1)
+
+    def stopGamePieceCollector(self) -> None:
+        self.roller.set(ControlMode.PercentOutput, 0)
+
+    def releaseGamePiece(self) -> None:
+        self.roller.set(ControlMode.PercentOutput, 1)

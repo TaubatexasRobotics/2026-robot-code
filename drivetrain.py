@@ -1,14 +1,14 @@
 import constants
-from commands2 import Subsystem, Command
-from typing import Optional
-from camera import Camera
+from commands2 import Subsystem, Command, PIDCommand, SequentialCommandGroup
+from typing import Callable
+from camera import AprilTagCamera
 from wpilib import DriverStation, Field2d, SmartDashboard
 from navx import AHRS
 from wpilib.drive import DifferentialDrive
 from wpimath.controller import PIDController, SimpleMotorFeedforwardMeters
 from wpimath.kinematics import (
-    DifferentialDriveOdometry, 
-    DifferentialDriveWheelSpeeds, 
+    DifferentialDriveOdometry,
+    DifferentialDriveWheelSpeeds,
     ChassisSpeeds,
 )
 from wpimath.geometry import Pose2d, Rotation2d
@@ -20,11 +20,14 @@ from rev import (
     SparkLowLevel,
     ClosedLoopSlot,
 )
-from wpilib.simulation import DifferentialDrivetrainSim
-from wpimath.system.plant import LinearSystemId, DCMotor
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPLTVController
 from pathplannerlib.config import RobotConfig
+from commands2.sysid import SysIdRoutine
+from wpimath.units import volts
+from wpilib import RobotController
+from wpilib.sysid import SysIdRoutineLog
+
 
 class Drivetrain(Subsystem):
     def __init__(self) -> None:
@@ -44,27 +47,19 @@ class Drivetrain(Subsystem):
         self.drivetrain = DifferentialDrive(
             self.left_front_motor, self.right_front_motor
         )
-        self.drivetrain.setSafetyEnabled(True)
-        self.field = Field2d()
 
-        """
-        self.drivetrain_system = LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3)
-        self.drivetrain_simulator = DifferentialDrivetrainSim(
-            self.drivetrain_system,
-            DCMotor.NEO(4),
-            8,
-            constants.kTrackWidth,
-            constants.kWheelDiameter / 2,
-            None
-        )
-        """
+        self.drivetrain.setSafetyEnabled(True)
+        self.drivetrain.setExpiration(0.1)
+        self.drivetrain.setMaxOutput(1.0)
+
+        self.field = Field2d()
 
         config = SparkMaxConfig()
 
         config.smartCurrentLimit(constants.kDrivetrainSmartCurrentLimit)
         config.setIdleMode(constants.kDrivetrainIdleMode)
         config.closedLoop.pid(*constants.kDrivetrainPID)
-        config.closedLoop.velocityFF(constants.kvVoltSecondsPerMeter)
+        config.closedLoop.feedForward.sva(*constants.kDrivetrainFeedForward)
         config.closedLoop.maxMotion.maxAcceleration(
             constants.kMaxAccelerationMetersPerSecondSquared
         )
@@ -111,22 +106,11 @@ class Drivetrain(Subsystem):
         self.navx = AHRS.create_spi()
         self.navx.reset()
 
-        self.pid_angular = PIDController(*constants.kDrivetrainPID)
-        self.pid_forward = PIDController(*constants.kDrivetrainPID)
-
-        rotation = Rotation2d.fromDegrees(self.navx.getAngle())
-
         self.odometry = DifferentialDriveOdometry(
-            rotation,
+            Rotation2d.fromDegrees(-self.navx.getAngle()),
             self.left_encoder.getPosition(),
             self.right_encoder.getPosition(),
             Pose2d(*constants.kInitialPose),
-        )
-
-        self.feedforward = SimpleMotorFeedforwardMeters(
-            constants.ksVolts,
-            constants.kvVoltSecondsPerMeter,
-            constants.kaVoltSecondsSquaredPerMeter,
         )
 
         try:
@@ -142,9 +126,16 @@ class Drivetrain(Subsystem):
             PPLTVController(0.02),
             pathConfig,
             self.shouldFlipPath,
-            self
+            self,
         )
-    
+
+        self.sys_id_routine = SysIdRoutine(
+            SysIdRoutine.Config(),
+            SysIdRoutine.Mechanism(self.sysIdDriveVoltage, self.log, self),
+        )
+
+        SmartDashboard.putBoolean("Angular Mode", False)
+
     def stop(self) -> None:
         self.drivetrain.arcadeDrive(0, 0)
 
@@ -152,12 +143,12 @@ class Drivetrain(Subsystem):
         self.left_encoder.setPosition(0)
         self.right_encoder.setPosition(0)
 
-    def shouldFlipPath(self) -> None:
+    def shouldFlipPath(self) -> bool:
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
     def resetPose(self, pose: Pose2d) -> None:
         self.odometry.resetPosition(
-            Rotation2d.fromDegrees(self.navx.getAngle()),
+            Rotation2d.fromDegrees(-self.navx.getAngle()),
             self.left_encoder.getPosition(),
             self.right_encoder.getPosition(),
             pose,
@@ -166,9 +157,13 @@ class Drivetrain(Subsystem):
     def getPose(self) -> Pose2d:
         return self.odometry.getPose()
 
-    def driveWithWheelSpeeds(self, speeds: DifferentialDriveWheelSpeeds) -> None:
-        left_feedforward = self.feedforward.calculate(speeds.left)
-        right_feedforward = self.feedforward.calculate(speeds.right)
+    def driveWithWheelSpeeds(
+        self,
+        speeds: DifferentialDriveWheelSpeeds,
+        feedforward: SimpleMotorFeedforwardMeters,
+    ) -> None:
+        left_feedforward = feedforward.calculate(speeds.left)
+        right_feedforward = feedforward.calculate(speeds.right)
 
         self.left_closed_loop.setReference(
             speeds.left,
@@ -182,7 +177,7 @@ class Drivetrain(Subsystem):
             ClosedLoopSlot.kSlot0,
             right_feedforward,
         )
-    
+
     def driveWithRelativeSpeeds(self, chassisSpeeds: ChassisSpeeds) -> None:
         wheelSpeeds = constants.kDrivetrainKinematics.toWheelSpeeds(chassisSpeeds)
         self.left_closed_loop.setSetpoint(
@@ -203,51 +198,111 @@ class Drivetrain(Subsystem):
                 self.left_encoder.getVelocity(), self.right_encoder.getVelocity()
             )
         )
-    
+
     def forward(self) -> Command:
-        self.run(lambda: self.drivetrain.arcadeDrive(1, 0))
+        return self.run(lambda: self.drivetrain.arcadeDrive(1, 0))
 
-    def backward(self) -> None:
-        self.run(lambda: self.drivetrain.arcadeDrive(-1, 0))
+    def backward(self) -> Command:
+        return self.run(lambda: self.drivetrain.arcadeDrive(-1, 0))
 
-    def arcadeDrive(self, speed: float, rotate: float) -> Command:
-        self.run(lambda: self.drivetrain.arcadeDrive(speed, rotate))
+    def arcadeDrive(
+        self, speed: Callable[[], float], rotate: Callable[[], float]
+    ) -> Command:
+        return self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate()))
 
-    def cheesyDrive(self, speed: float, rotate: float) -> Command:
-        self.run(lambda: self.drivetrain.curvatureDrive(speed, rotate))
+    def cheesyDrive(
+        self,
+        speed: Callable[[], float],
+        rotate: Callable[[], float],
+        allowTurnInPlace: bool,
+    ) -> Command:
+        return self.run(
+            lambda: self.drivetrain.curvatureDrive(speed(), rotate(), allowTurnInPlace)
+        )
 
-    def tankDrive(self, left_speed: float, right_speed: float) -> Command:
-        self.run(lambda: self.drivetrain.tankDrive(left_speed, right_speed))
+    def tankDrive(
+        self, left_speed: Callable[[], float], right_speed: Callable[[], float]
+    ) -> Command:
+        return self.run(lambda: self.drivetrain.tankDrive(left_speed(), right_speed()))
+
+    def sysIdDriveVoltage(self, voltage: volts) -> None:
+        angularMode: bool = SmartDashboard.getBoolean("Angular Mode", False)
+
+        self.left_front_motor.setVoltage(voltage)
+        self.right_front_motor.setVoltage(voltage if not angularMode else -voltage)
+
+    def log(self, sys_id_routine: SysIdRoutineLog) -> None:
+        sys_id_routine.motor("drive-left").voltage(
+            self.left_front_motor.get() * RobotController.getBatteryVoltage()
+        ).position(self.left_encoder.getPosition()).velocity(
+            self.left_encoder.getVelocity()
+        )
+
+        sys_id_routine.motor("drive-right").voltage(
+            self.right_front_motor.get() * RobotController.getBatteryVoltage()
+        ).position(self.right_encoder.getPosition()).velocity(
+            self.right_encoder.getVelocity()
+        )
+
+    def sysIdQuasistatic(self, direction: SysIdRoutine.Direction) -> Command:
+        return self.sys_id_routine.quasistatic(direction)
+
+    def sysIdDynamic(self, direction: SysIdRoutine.Direction) -> Command:
+        return self.sys_id_routine.dynamic(direction)
 
     def periodic(self) -> None:
         self.field.setRobotPose(self.odometry.getPose())
         SmartDashboard.putData("Field", self.field)
         self.odometry.update(
-            Rotation2d.fromDegrees(self.navx.getAngle()),
+            Rotation2d.fromDegrees(-self.navx.getAngle()),
             self.left_encoder.getPosition(),
             self.right_encoder.getPosition(),
         )
 
-    def arcadeDriveAlign(self, camera: Camera, tag: int) -> None:
-        yaw = camera.getYaw(tag)
-        turn = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
-        self.drivetrain.arcadeDrive(0, turn)
+    def aim(self, camera: AprilTagCamera, tag: int) -> Command:
+        yaw = camera.getYawFromTag(tag)
 
-    def arcadeDriveAimAndRange(self, camera: Camera, tag: int) -> None:
-        yaw, range = camera.getYawWithRange(tag)
-        range = (
-            self.pid_forward.calculate(range, constants.kGoalRangeMeters)
-            if yaw != -1
-            else 0
-        )
-        rotation = self.pid_angular.calculate(yaw, 0) if yaw != -1 else 0
-        self.drivetrain.arcadeDrive(range, rotation)
+        if yaw != -1:
+            return PIDCommand(
+                PIDController(*constants.kDrivetrainPID[:3]),
+                yaw,
+                0,
+                lambda output: self.drivetrain.arcadeDrive(0, output),
+                self,
+            )
 
-    def zRotationFromDegrees(self, setpoint: Optional[float]) -> None:
-        self.pid_angular.setSetpoint(setpoint)
-        self.drivetrain.arcadeDrive(
-            0,
-            self.pid_angular.calculate(
-                self.navx.getAngle(), self.pid_angular.getSetpoint()
-            ),
+        return self.run(lambda: self.drivetrain.arcadeDrive(0, 0))
+
+    def aimAndRange(self, camera: AprilTagCamera, tag: int) -> Command:
+        yaw, range = camera.getYawAndRangeFromTag(tag)
+
+        if yaw != -1:
+            return SequentialCommandGroup(
+                [
+                    PIDCommand(
+                        PIDController(*constants.kDrivetrainPID),
+                        yaw,
+                        0,
+                        lambda output: self.drivetrain.arcadeDrive(0, output),
+                        self,
+                    ),
+                    PIDCommand(
+                        PIDController(*constants.kDrivetrainPID),
+                        range,
+                        constants.kGoalRangeMeters,
+                        lambda output: self.drivetrain.arcadeDrive(output, 0),
+                        self,
+                    ),
+                ]
+            )
+
+        return self.run(lambda: self.drivetrain.arcadeDrive(0, 0))
+
+    def rotate(self, angle: float) -> Command:
+        return PIDCommand(
+            PIDController(*constants.kDrivetrainPID),
+            self.navx.getAngle(),
+            angle,
+            lambda output: self.drivetrain.arcadeDrive(0, output),
+            self,
         )

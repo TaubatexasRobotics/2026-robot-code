@@ -6,53 +6,88 @@ from rev import (
     SparkMaxConfig,
     SparkBaseConfig,
 )
-from commands2 import Subsystem
+from commands2 import Subsystem, Command
+from commands2.cmd import run
 from wpilib import SmartDashboard
+from wpimath.controller import (
+    BangBangController,
+    SimpleMotorFeedforwardMeters,
+    PIDController,
+)
+from wpimath.units import rotationsPerMinuteToRadiansPerSecond
+import constants
 
 
 class Shooter(Subsystem):
-    def __init__(self, kS: int, kV: int, kA: int, setpoint: int) -> None:
-        self.motor = SparkMax(11, SparkLowLevel.MotorType.kBrushless)
+    flywheel: SparkMax = SparkMax(
+        constants.kFlywheelId, SparkLowLevel.MotorType.kBrushless
+    )
+    bangBangController: BangBangController = BangBangController()
 
+    def __init__(self) -> None:
         config = SparkMaxConfig()
 
         config.smartCurrentLimit(40)
         config.setIdleMode(SparkBaseConfig.IdleMode.kCoast)
+        config.closedLoop.feedForward.sva(*constants.kFlywheelFeedForward)
+        config.closedLoop.pid(*constants.kFlywheelPID)
 
-        config.closedLoop.pid(0, 0, 0)
-        config.closedLoop.feedForward.kS(kS)
-        config.closedLoop.feedForward.kV(kV)
-        config.closedLoop.feedForward.kA(kA)
+        self.feedforward = SimpleMotorFeedforwardMeters(
+            *constants.kFlywheelFeedForward[:3]
+        )
+        self.pid = PIDController(*constants.kFlywheelPID[:3])
 
-        self.motor.configure(
+        self.flywheel.configure(
             config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters
         )
 
-        # self.controller = self.motor.getClosedLoopController()
-        # config.closedLoop.maxMotion.cruiseVelocity()
-        # config.closedLoop.maxAcceleration.cruiseVelocity()
-        # config.closedLoop.allowedProfileError.cruiseVelocity()
+        self.closedLoopController = self.flywheel.getClosedLoopController()
 
-        # self.motor.setSetpoint(setpoint, SparkLowLevel.ControlType.kMAXMotionVelocityControl)
-        SmartDashboard.putNumber("kS", 0.1)
+        self.encoder = self.flywheel.getEncoder()
+        SmartDashboard.putData(self.bangBangController)
+
+        SmartDashboard.putData("Shooter BangBang Controller", self.bangBangController)
+        SmartDashboard.putNumberArray(
+            "Shooter PID Controller", [*constants.kFlywheelPID[:3]]
+        )
+        SmartDashboard.putNumber("Shooter Setpoint", 0)
+        SmartDashboard.putNumberArray(
+            "Shooter FeedForward", [*constants.kFlywheelFeedForward[:3]]
+        )
+
+    def activate(self) -> None:
+        self.flywheel.set(0.7)
 
     def periodic(self) -> None:
-        self.setFeedforwardConstraints(SmartDashboard.getNumber("kS", 0), 0, 0)
+        feedforward = SmartDashboard.getNumberArray("Shooter FeedForward", [0, 0, 0])
+        self.pid.setPID(
+            *SmartDashboard.getNumberArray("Shooter PID Controller", [0, 0, 0])
+        )
+        self.feedforward.setKs(feedforward[0])
+        self.feedforward.setKv(feedforward[1])
+        self.feedforward.setKa(feedforward[2])
 
-    def setFeedforwardConstraints(self, kS: int, kV: int, kA: int) -> None:
-        config = SparkMaxConfig()
+    def setFlywheelBySetpoint(self, setpoint: float) -> None:
+        output = self.pid.calculate(self.encoder.getPosition(), setpoint)
+        self.flywheel.set(output)
 
-        config.smartCurrentLimit(40)
-        config.setIdleMode(SparkBaseConfig.IdleMode.kCoast)
-
-        config.closedLoop.pid(0, 0, 0)
-        config.closedLoop.feedForward.kS(kS)
-        config.closedLoop.feedForward.kV(kV)
-        config.closedLoop.feedForward.kA(kA)
-
-        self.motor.configure(
-            config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters
+    def setFlywheelBySetpointCommand(self) -> Command:
+        return run(
+            lambda: self.setFlywheelBySetpoint(
+                SmartDashboard.getNumber("Shooter Setpoint", 0)
+            )
         )
 
-    def activateShooter(self) -> None:
-        self.motor.set(0.7)
+    def deactivate(self) -> None:
+        self.flywheel.set(0)
+
+    def bangBangActivate(self, maxSetpoint: float) -> None:
+        setpoint = max(0, rotationsPerMinuteToRadiansPerSecond(maxSetpoint))
+        output = (
+            self.bangBangController.calculate(self.encoder.getPosition(), setpoint)
+            * 12.0
+        )
+        self.closedLoopController.setReference(
+            output + 0.9 * self.feedforward.calculate(setpoint),
+            SparkMax.ControlType.kVoltage,
+        )
