@@ -16,7 +16,7 @@ class Crest:
         self.pid.setTolerance(0.1)
         self.encoder.setPosition(0)
 
-    
+
     def getPosition(self) -> float:
         return self.encoder.getPosition() * gear_ratio * 360
 

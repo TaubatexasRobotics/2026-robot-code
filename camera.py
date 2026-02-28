@@ -11,6 +11,7 @@ from wpimath.units import degreesToRadians
 from pixy2py.pixy2 import Pixy2
 from pixy2py.pixy2ccc import Pixy2CCC
 from wpilib import RobotBase, SerialPort, CameraServer
+from commands2 import Subsystem
 
 
 class AprilTagCamera(ABC):
@@ -88,15 +89,15 @@ class LimelightCamera(AprilTagCamera):
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
 
-class PixyFuelDetector:
+class PixyFuelDetector(Subsystem):
     def __init__(self) -> None:
         self.pixy = Pixy2(Pixy2.LinkType.SPI)
         self.pixy.init()
         self.pixy.setLamp(1, 1)
-        self.pixy.setLED(255, 255, 255)
+        self.pixy.setLED(red=255, green=255, blue=255)
 
     def getBiggestBlock(self) -> Optional[Pixy2CCC.Block]:
-        blockCount: int = pixy.getCCC().getBlocks(False, Pixy2CCC.CCC_SIG1, 25)
+        blockCount: int = self.pixy.getCCC().getBlocks(False, Pixy2CCC.CCC_SIG1, 25)
         print("Found " + str(blockCount) + " blocks!")
         if blockCount <= 0:
             return None
@@ -111,3 +112,6 @@ class PixyFuelDetector:
                 largestBlock = block
 
         return largestBlock
+
+    def periodic(self) -> None:
+        self.getBiggestBlock()

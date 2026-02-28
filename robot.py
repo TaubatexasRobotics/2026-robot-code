@@ -11,7 +11,7 @@ from pathplannerlib.auto import AutoBuilder
 from wpilib import SmartDashboard, SendableChooser, DriverStation
 from commands2.sysid import SysIdRoutine
 from shooter import Shooter
-from camera import Pixy2, LimelightCamera, PhotonVisionCamera
+from camera import PixyFuelDetector, LimelightCamera, PhotonVisionCamera
 
 class Robot(TimedCommandRobot):
     autonomous: Optional[Command] = None
@@ -22,6 +22,8 @@ class Robot(TimedCommandRobot):
     shooter: Shooter = Shooter()
 
     def robotInit(self) -> None:
+        self.pixy: PixyFuelDetector = PixyFuelDetector()
+
         self.autoChooser.addOption(
             "LTV Controller Test Auto", AutoLTVController(self.drivetrain)
         )
@@ -70,8 +72,3 @@ class Robot(TimedCommandRobot):
 
     def autonomousExit(self) -> None:
         CommandScheduler.getInstance().cancelAll()
-
-    def testInit(self) -> None:
-        JoystickButton(self.driverJoystick, 1).onTrue(
-            self.shooter.setFlywheelBySetpointCommand()
-        )
