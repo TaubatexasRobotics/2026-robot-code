@@ -1,17 +1,14 @@
 # Vim temporarily files
 *.swp
 
-# WPILib default config
+# RobotPy default config
 tests/
 .wpilib/
-
-# WPILib default simulator
-simgui-ds.json
 
 # CTRE Simulator
 ctre_sim
 
-# Those were created when running `python -m robotpy sim`
+# WPILib default simulator, those were created when running `python -m robotpy sim`
 networktables.json
 simgui-ds.json
 simgui-window.json
@@ -191,5 +188,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-simgui-window.json
-simgui-ds.json
+
