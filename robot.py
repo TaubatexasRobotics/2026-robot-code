@@ -15,13 +15,14 @@ from camera import PixyFuelDetector, LimelightCamera, PhotonVisionCamera
 
 class Robot(TimedCommandRobot):
     autonomous: Optional[Command] = None
-    drivetrain: Drivetrain = Drivetrain()
-    intake: Intake = Intake()
-    autoChooser: SendableChooser = AutoBuilder.buildAutoChooser()
-    driverJoystick: GenericJoystick = GenericJoystick(constants.kJoystickDriverPort)
-    shooter: Shooter = Shooter()
 
     def robotInit(self) -> None:
+        self.drivetrain = Drivetrain()
+        self.intake = Intake()
+        self.autoChooser = AutoBuilder.buildAutoChooser()
+        self.driverJoystick = GenericJoystick(constants.kJoystickDriverPort)
+        self.shooter = Shooter()
+
         self.pixy: PixyFuelDetector = PixyFuelDetector()
 
         self.autoChooser.addOption(

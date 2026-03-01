@@ -5,12 +5,12 @@ import constants
 
 
 class Intake(Subsystem):
-    pivot: WPI_VictorSPX = WPI_VictorSPX(constants.kIntakeAngleId)
-    roller: WPI_VictorSPX = WPI_VictorSPX(constants.kIntakeTrackId)
-    pivotUp: bool = False
-    lastBurstTime: float = 0.0
-
     def __init__(self) -> None:
+        self.pivot = WPI_VictorSPX(constants.kIntakeAngleId)
+        self.roller = WPI_VictorSPX(constants.kIntakeTrackId)
+        self.pivotUp = False
+        self.lastBurstTime = 0.0
+
         SmartDashboard.putNumber("up", 0.5)
         SmartDashboard.putNumber("down", 0.5)
         self.pivot.setInverted(True)

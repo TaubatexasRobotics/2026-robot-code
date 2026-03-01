@@ -4,9 +4,8 @@ from commands2.cmd import run
 
 
 class Climber(Subsystem):
-    climber: WPI_VictorSPX = WPI_VictorSPX(1)
-
     def __init__(self) -> None:
+        self.climber = WPI_VictorSPX(1)
         self.setDefaultCommand(run(lambda: self.stop()))
 
     def clockwise(self) -> None:

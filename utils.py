@@ -20,3 +20,8 @@ class Utils:
         buffer = bytearray(port_bytes)
         converted = port.read()
         return buffer[:converted].decode("ascii")
+
+    @staticmethod
+    def clamp(value, min_value, max_value):
+        return max(min(value, max_value), min_value)
+
