@@ -31,3 +31,6 @@ def error_log(message):
         print(message)        
         
 #TODO -> save logs
+
+def clamp(value, min_value, max_value):
+    return max(min(value, max_value), min_value)
