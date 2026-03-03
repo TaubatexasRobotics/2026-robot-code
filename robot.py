@@ -13,65 +13,80 @@ from commands2.sysid import SysIdRoutine
 from shooter import Shooter
 from turret import Turret
 from camera import Pixy2, LimelightCamera, PhotonVisionCamera
+from crest import Crest
 
 class Robot(TimedCommandRobot):
     # autonomous: Optional[Command] = None
-    # drivetrain: Drivetrain = Drivetrain()
+    drivetrain: Drivetrain = Drivetrain()
     # intake: Intake = Intake()
     # # autoChooser: SendableChooser = AutoBuilder.buildAutoChooser()
     driverJoystick: GenericJoystick = GenericJoystick(constants.kJoystickDriverPort)
     # shooter: Shooter = Shooter()
     turret: Turret = Turret()
+    crest: Crest = Crest()
 
     def robotInit(self) -> None:
-        pass
-        # self.autoChooser.addOption(
-        #     "LTV Controller Test Auto", AutoLTVController(self.drivetrain)
-        # )
-        # self.autoChooser.addOption(
-        #     "Drive Straight Path", DriveStraightPath(self.drivetrain, 5)
-        # )
-        # SmartDashboard.putData("Auto Chooser", self.autoChooser)
+        # definicao dos botoes
+        JoystickButton(self.driverJoystick, 1).onTrue(self.crest.commandMoveToSetpoint())
+        JoystickButton(self.driverJoystick, 2).onTrue(self.drivetrain.forward())
+        JoystickButton(self.driverJoystick, 3).onTrue(self.drivetrain.backward())
+        JoystickButton(self.driverJoystick, 4).onTrue(self.drivetrain.aim(20))#Tag aleatoria da apriltag
+        JoystickButton(self.driverJoystick, 5).onTrue(self.turret.commandCenterTurret(self.driverJoystick.getLeftXAxis()))
+        JoystickButton(self.driverJoystick, 6).onTrue(self.drivetrain.aimAndRange(20))#Tag aleatora
+        JoystickButton(self.driverJoystick, 7).onTrue()
+        JoystickButton(self.driverJoystick, 8).onTrue()
+        JoystickButton(self.driverJoystick, 9).onTrue()
 
+        '''
+        self.autoChooser.addOption(
+            "LTV Controller Test Auto", AutoLTVController(self.drivetrain)
+        )
+        self.autoChooser.addOption(
+            "Drive Straight Path", DriveStraightPath(self.drivetrain, 5)
+        )
+        SmartDashboard.putData("Auto Chooser", self.autoChooser)
+        '''
     def teleopInit(self) -> None:
-        # JoystickButton(self.driverJoystick, 5).onTrue(self.intake.up())
         pass
-        #JoystickButton(self.driverJoystick, 5).onTrue(self.turret.commandCenterTurret(self.driverJoystick.getLeftXAxis()))
     
     def testPeriodic(self):
-        JoystickButton(self.driverJoystick, 5).onTrue(self.turret.commandCenterTurret(1))
-        # JoystickButton(self.driverJoystick, 6).onTrue(self.intake.down())
+        pass
+        '''
+        JoystickButton(self.driverJoystick, 6).onTrue(self.intake.down())
 
-        # JoystickButton(self.driverJoystick, 1).onTrue(
-        #     self.drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
-        # )
+        JoystickButton(self.driverJoystick, 1).onTrue(
+            self.drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)
+        )
 
-        # JoystickButton(self.driverJoystick, 2).onTrue(
-        #     self.drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
-        # )
+        JoystickButton(self.driverJoystick, 2).onTrue(
+            self.drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+        )
 
-        # JoystickButton(self.driverJoystick, 3).onTrue(
-        #     self.drivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward)
-        # )
+        JoystickButton(self.driverJoystick, 3).onTrue(
+            self.drivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward)
+        )
 
-        # JoystickButton(self.driverJoystick, 4).onTrue(
-        #     self.drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse)
-        # )
+        JoystickButton(self.driverJoystick, 4).onTrue(
+            self.drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse)
+        )
 
-        # self.drivetrain.setDefaultCommand(
-        #     self.drivetrain.arcadeDrive(
-        #         lambda: self.driverJoystick.getLeftYAxis(),
-        #         lambda: self.driverJoystick.getRightXAxis(),
-        #     )
-        # )
+        self.drivetrain.setDefaultCommand(
+            self.drivetrain.arcadeDrive(
+                lambda: self.driverJoystick.getLeftYAxis(),
+                lambda: self.driverJoystick.getRightXAxis(),
+            )
+        )
+        '''
 
     def autonomousInit(self) -> None:
         pass
-        # DriverStation.silenceJoystickConnectionWarning(True)
-        # self.autonomous = self.autoChooser.getSelected()
+        '''
+        DriverStation.silenceJoystickConnectionWarning(True)
+        self.autonomous = self.autoChooser.getSelected()
 
-        # if self.autonomous:
-        #     self.autonomous.schedule()
+        if self.autonomous:
+            self.autonomous.schedule()
+        '''
 
     def autonomousPeriodic(self) -> None:
         pass
