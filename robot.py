@@ -27,15 +27,15 @@ class Robot(TimedCommandRobot):
 
     def robotInit(self) -> None:
         # definicao dos botoes
-        JoystickButton(self.driverJoystick, 1).onTrue(self.crest.commandMoveToSetpoint())
-        JoystickButton(self.driverJoystick, 2).onTrue(self.drivetrain.forward())
-        JoystickButton(self.driverJoystick, 3).onTrue(self.drivetrain.backward())
-        JoystickButton(self.driverJoystick, 4).onTrue(self.drivetrain.aim(20))#Tag aleatoria da apriltag
-        JoystickButton(self.driverJoystick, 5).onTrue(self.turret.commandCenterTurret(self.driverJoystick.getLeftXAxis()))
-        JoystickButton(self.driverJoystick, 6).onTrue(self.drivetrain.aimAndRange(20))#Tag aleatora
-        JoystickButton(self.driverJoystick, 7).onTrue()
-        JoystickButton(self.driverJoystick, 8).onTrue()
-        JoystickButton(self.driverJoystick, 9).onTrue()
+        JoystickButton(self.driverJoystick, 1).whileTrue(self.crest.commandMoveToSetpoint())
+        JoystickButton(self.driverJoystick, 2).whileTrue(self.drivetrain.forward())
+        JoystickButton(self.driverJoystick, 3).whileTrue(self.drivetrain.backward())
+        JoystickButton(self.driverJoystick, 4).whileTrue(self.drivetrain.aim(20))#Tag aleatoria da apriltag
+        JoystickButton(self.driverJoystick, 5).whileTrue(self.turret.commandCenterTurret(self.driverJoystick.getLeftXAxis()))
+        JoystickButton(self.driverJoystick, 6).whileTrue(self.drivetrain.aimAndRange(20))#Tag aleatora
+        JoystickButton(self.driverJoystick, 7).whileTrue()
+        JoystickButton(self.driverJoystick, 8).whileTrue()
+        JoystickButton(self.driverJoystick, 9).whileTrue()
 
         '''
         self.autoChooser.addOption(
