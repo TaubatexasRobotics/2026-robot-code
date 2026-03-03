@@ -5,10 +5,10 @@ from autonomous.autoltvcontroller import AutoLTVController
 from autonomous.drivestraightpath import DriveStraightPath
 from commands2 import TimedCommandRobot, CommandScheduler, Command
 from typing import Optional
-from commands2.button import JoystickButton
+from commands2.button import JoystickButton 
 from intake import Intake
 from pathplannerlib.auto import AutoBuilder
-from wpilib import SmartDashboard, SendableChooser, DriverStation
+from wpilib import SmartDashboard, SendableChooser, DriverStation, Joystick
 from commands2.sysid import SysIdRoutine
 from shooter import Shooter
 from turret import Turret
@@ -19,12 +19,12 @@ class Robot(TimedCommandRobot):
     # drivetrain: Drivetrain = Drivetrain()
     # intake: Intake = Intake()
     # # autoChooser: SendableChooser = AutoBuilder.buildAutoChooser()
-    driverJoystick: GenericJoystick = GenericJoystick(constants.kJoystickDriverPort)
+    # driverJoystick: GenericJoystick = GenericJoystick(constants.kJoystickDriverPort)
     # shooter: Shooter = Shooter()
-    turret: Turret = Turret()
 
     def robotInit(self) -> None:
-        pass
+        self.joystick = Joystick(0)
+        self.turret = Turret()
         # self.autoChooser.addOption(
         #     "LTV Controller Test Auto", AutoLTVController(self.drivetrain)
         # )
@@ -34,12 +34,13 @@ class Robot(TimedCommandRobot):
         # SmartDashboard.putData("Auto Chooser", self.autoChooser)
 
     def teleopInit(self) -> None:
-        # JoystickButton(self.driverJoystick, 5).onTrue(self.intake.up())
-        pass
-        #JoystickButton(self.driverJoystick, 5).onTrue(self.turret.commandCenterTurret(self.driverJoystick.getLeftXAxis()))
+        JoystickButton(self.joystick, 2).whileTrue(self.turret.commandCenterTurret(self.joystick))
+        
+        
     
     def testPeriodic(self):
-        JoystickButton(self.driverJoystick, 5).onTrue(self.turret.commandCenterTurret(1))
+        pass
+        # JoystickButton(self.joystick, 2).onTrue(self.turret.commandCenterTurret(1))
         # JoystickButton(self.driverJoystick, 6).onTrue(self.intake.down())
 
         # JoystickButton(self.driverJoystick, 1).onTrue(
