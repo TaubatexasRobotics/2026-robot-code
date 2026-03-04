@@ -63,12 +63,20 @@ kBaudRate = 9600
 kLEDUSBPort = SerialPort.Port.kUSB1
 
 # Intake
-kIntakeAngleId = 1
-kIntakeTrackId = 12
+kIntakeAngleId = 4
+kIntakeTrackId = 1
 kPivotTimeDown = 0.35
 kPivotTimeUp = 0.5
 
 # Shooter
-kFlywheelId = 11
+kFlywheelId = 51
 kFlywheelFeedForward = (0, 0, 0, ClosedLoopSlot.kSlot0)  # kS, kV, kA
 kFlywheelPID = (0.2, 0.1, 0, ClosedLoopSlot.kSlot0)  # kP, kI, kD
+kHoodId = 53
+
+# Indexer
+kFrontRoller = 5 # 775 RedLine
+kBackRoller = 2
+
+# Turret
+kTurretId = 56
