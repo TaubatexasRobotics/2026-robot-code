@@ -1,27 +1,28 @@
-import rev
 import phoenix5
-import wpilib
-from wpilib import SmartDashboard
+from wpilib import SmartDashboard, XboxController
 
-ARM_MOTOR_ID = 53
-ROLL_MOTOR_ID = 12
+PIVOT_MOTOR_ID = 4
+ROLL_MOTOR_ID = 1
 
-joystick = wpilib.Joystick(0)
+joystick = XboxController(0)
 
 class Intake:
     def __init__(self):
         self.is_enabled = False
-        self.arm_motor = rev.SparkMax(ARM_MOTOR_ID, rev.SparkLowLevel.MotorType.kBrushless)
+        self.pivot_motor = phoenix5.WPI_VictorSPX(PIVOT_MOTOR_ID)
         self.roll_motor = phoenix5.WPI_VictorSPX(ROLL_MOTOR_ID)
         
+    def update_dashboard(self):
+        SmartDashboard.putBoolean("Intake/intake enabled", self.is_enabled)
+        
     def turnDown(self):
-        self.arm_motor.set(-0.7)
+        self.pivot_motor.set(-0.7)
 
     def stopArm(self):
-        self.arm_motor.set(0)   
+        self.pivot_motor.set(0)   
 
     def turnUp(self):
-        self.arm_motor.set(0.7)    
+        self.pivot_motor.set(0.7)    
 
     def receive(self):    
         self.roll_motor.set(-1)
@@ -33,24 +34,21 @@ class Intake:
         self.roll_motor.set(1)
         
     def teleopPeriodic(self):
-        try:
-            if joystick.getRawButtonPressed(1):
-                self.is_enabled = not self.is_enabled  
+        if joystick.getBButtonPressed():
+            self.is_enabled = not self.is_enabled  
 
-            if self.is_enabled:
-                self.receive()
+        if self.is_enabled:
+            self.receive()
+        
+        else:
+            if joystick.getXButton():
+                self.drop()
             else:
-                if joystick.getRawButton(4):
-                    self.drop()
-                else:
-                    self.stopRoll()
+                self.stopRoll()
 
-            if joystick.getRawButton(2):
-                self.turnDown()
-            elif joystick.getRawButton(3):
-                self.turnUp()
-            else:
-                self.stopArm()
-                
-        except BaseException as e:
-            wpilib.DataLogManager.log(repr(e))
+        if joystick.getAButton():
+            self.turnDown()
+        elif joystick.getYButton():
+            self.turnUp()
+        else:
+            self.stopArm()
