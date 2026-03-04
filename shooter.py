@@ -43,6 +43,8 @@ class Shooter(Subsystem):
             config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters
         )
 
+        self.setDefaultCommand(self.deactivateFlywheel())
+
     def periodic(self) -> None:
         SmartDashboard.putData("PID", self.hood_pid)
         SmartDashboard.putNumber("crest encoder", self.hood_encoder.getPosition())
@@ -70,7 +72,7 @@ class Shooter(Subsystem):
         self.moveTo(0)
 
     def activateFlywheel(self) -> Command:
-        return self.run(lambda: self.flywheel.set(0.7))
+        return self.run(lambda: self.flywheel.set(0.2))
 
     def deactivateFlywheel(self) -> Command:
         return self.run(lambda: self.flywheel.set(0))

@@ -9,6 +9,7 @@ from intake import Intake
 from pathplannerlib.auto import AutoBuilder
 from wpilib import SmartDashboard, SendableChooser, DriverStation, Joystick
 from commands2.sysid import SysIdRoutine
+from commands2.cmd import run
 from shooter import Shooter
 from turret import Turret
 from camera import Pixy2, LimelightCamera, PhotonVisionCamera
@@ -29,13 +30,18 @@ class Robot(TimedCommandRobot):
         JoystickButton(self.driverJoystick, 1).whileTrue(
             ParallelCommandGroup(
                 self.shooter.activateFlywheel(),
-                self.indexer.feed()
+                run(lambda: self.indexer.feed())
             )
         )
 
-        JoystickButton(self.driverJoystick, 7).whileTrue(self.intake.up())
-        JoystickButton(self.driverJoystick, 8).whileTrue(self.intake.down())
-        
+        JoystickButton(self.driverJoystick, 2).whileTrue(self.intake.up())
+        JoystickButton(self.driverJoystick, 3).whileTrue(self.intake.down())
+        JoystickButton(self.driverJoystick, 5).whileTrue(run(lambda: self.intake.collectGamePiece()))
+        JoystickButton(self.driverJoystick, 6).whileTrue(run(lambda: self.intake.releaseGamePiece()))
+
+        JoystickButton(self.driverJoystick, 7).whileTrue(self.turret.activateYawClockwise())
+        JoystickButton(self.driverJoystick, 8).whileTrue(self.turret.activateYawCounterClockwise())
+
         self.autoChooser.addOption(
             "LTV Controller Test Auto", AutoLTVController(self.drivetrain)
         )

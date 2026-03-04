@@ -13,7 +13,9 @@ class Intake(Subsystem):
 
         SmartDashboard.putNumber("up", 0.5)
         SmartDashboard.putNumber("down", 0.5)
+
         self.pivot.setInverted(True)
+        self.setDefaultCommand(self.run(lambda: self.stopGamePieceCollector()))
 
     def isPivotUp(self) -> bool:
         return self.pivotUp

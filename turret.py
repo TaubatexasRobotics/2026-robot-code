@@ -13,6 +13,12 @@ class Turret(Subsystem):
         # self.target_RPM = 4500
         self.feedforward = SimpleMotorFeedforwardRadians(0, 0.002)
     
+    def activateYawClockwise(self) -> Command:
+        self.run(lambda: self.yaw.set(0.5))
+
+    def activateYawCounterClockwise(self) -> Command:
+        self.run(lambda: self.yaw.set(-0.5))
+
     def normalize(pixels, max_pixels):
         return (pixels * 2 / max_pixels) -1
 
