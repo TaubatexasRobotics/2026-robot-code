@@ -72,7 +72,7 @@ class Shooter(Subsystem):
         self.flywheel.set(output)
 
     def setFlywheelBySetpointCommand(self) -> Command:
-        return run(
+        return self.run(
             lambda: self.setFlywheelBySetpoint(
                 SmartDashboard.getNumber("Shooter Setpoint", 0)
             )

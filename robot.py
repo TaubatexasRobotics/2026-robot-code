@@ -18,24 +18,29 @@ from crest import Crest
 class Robot(TimedCommandRobot):
     # autonomous: Optional[Command] = None
     drivetrain: Drivetrain = Drivetrain()
-    # intake: Intake = Intake()
+    intake: Intake = Intake()
     # # autoChooser: SendableChooser = AutoBuilder.buildAutoChooser()
     driverJoystick: GenericJoystick = GenericJoystick(constants.kJoystickDriverPort)
-    # shooter: Shooter = Shooter()
+    shooter: Shooter = Shooter()
     turret: Turret = Turret()
     crest: Crest = Crest()
 
     def robotInit(self) -> None:
         # definicao dos botoes
+        # comandos crest
         JoystickButton(self.driverJoystick, 1).whileTrue(self.crest.commandMoveToSetpoint())
+        # comandos drivetrain
         JoystickButton(self.driverJoystick, 2).whileTrue(self.drivetrain.forward())
         JoystickButton(self.driverJoystick, 3).whileTrue(self.drivetrain.backward())
         JoystickButton(self.driverJoystick, 4).whileTrue(self.drivetrain.aim(20))#Tag aleatoria da apriltag
-        JoystickButton(self.driverJoystick, 5).whileTrue(self.turret.commandCenterTurret(self.driverJoystick.getLeftXAxis()))
-        JoystickButton(self.driverJoystick, 6).whileTrue(self.drivetrain.aimAndRange(20))#Tag aleatora
-        JoystickButton(self.driverJoystick, 7).whileTrue()
-        JoystickButton(self.driverJoystick, 8).whileTrue()
-        JoystickButton(self.driverJoystick, 9).whileTrue()
+        JoystickButton(self.driverJoystick, 5).whileTrue(self.drivetrain.aimAndRange(20))#Tag aleatora
+        # comandos turret
+        JoystickButton(self.driverJoystick, 6).whileTrue(self.turret.commandCenterTurret(self.driverJoystick.getLeftXAxis()))
+        # comandos intake
+        JoystickButton(self.driverJoystick, 7).whileTrue(self.intake.up())
+        JoystickButton(self.driverJoystick, 8).whileTrue(self.intake.down())
+        # comandos shooter
+        JoystickButton(self.driverJoystick, 9).whileTrue(self.shooter.setFlywheelBySetpointCommand())
 
         '''
         self.autoChooser.addOption(
