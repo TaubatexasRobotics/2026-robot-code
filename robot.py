@@ -25,6 +25,7 @@ class Robot(TimedCommandRobot):
     def robotInit(self) -> None:
         self.joystick = Joystick(0)
         self.turret = Turret()
+        #self.camera = PhotonVisionCamera()
         # self.autoChooser.addOption(
         #     "LTV Controller Test Auto", AutoLTVController(self.drivetrain)
         # )
@@ -35,6 +36,7 @@ class Robot(TimedCommandRobot):
 
     def teleopInit(self) -> None:
         JoystickButton(self.joystick, 2).whileTrue(self.turret.commandCenterTurret(self.joystick))
+        #JoystickButton(self.joystick, 2).whileTrue(self.turret.commandCenterTurret(self.camera))
         
         
     
