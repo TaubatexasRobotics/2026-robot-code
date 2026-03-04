@@ -34,3 +34,11 @@ def error_log(message):
 
 def clamp(value, min_value, max_value):
     return max(min(value, max_value), min_value)
+
+def for_each(mechanisms_dict, method_name):
+    for mechanism in mechanisms_dict.values():
+        try:
+            if hasattr(mechanism, method_name):
+                getattr(mechanism, method_name)()
+        except BaseException as e:
+            log_exception(e)   
