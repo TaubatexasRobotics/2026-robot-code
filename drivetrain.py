@@ -18,7 +18,14 @@ class Drivetrain():
         self.right_motors = wpilib.MotorControllerGroup(self.right_front_motor,self.right_back_motor)
         self.Drivetrain = wpilib.drive.DifferentialDrive(self.left_motors,self.right_motors)
         self.left_motors.setInverted(True)
+        self.joystick = wpilib.Joystick(0)        
 
     def arcadeDrive(self,speed,rotate):
         self.Drivetrain.arcadeDrive(speed,rotate)
+        
+    def teleopPeriodic(self):
+        self.Drivetrain.arcadeDrive(
+            self.joystick.getRawAxis(1),
+            self.joystick.getRawAxis(0)
+        )
 
