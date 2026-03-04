@@ -1,6 +1,6 @@
 from rev import SparkMax, SparkLowLevel
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
-from commands2 import Subsystem
+from commands2 import Subsystem, command
 
 
 class Turret(Subsystem):
@@ -8,25 +8,24 @@ class Turret(Subsystem):
         self.turret_motor = SparkMax(51, SparkLowLevel.MotorType.kBrushless)
         self.encoder = self.turret_motor.getEncoder()
         self.pid = PIDController(0.00025, 0, 0)
-        self.pid.setTolerance(100)
-        self.target_RPM = 4500
+        self.pid.setTolerance(0.1)
+        # self.target_RPM = 4500
         self.feedforward = SimpleMotorFeedforwardRadians(0, 0.002)
+    
+    def normalize(pixels, max_pixels):
+        return (pixels * 2 / max_pixels) -1
 
-    def shoot(self):
-        self.target_RPM = 4500
+    def clamp(self,value, min_value, max_value):
+        return max(min(value, max_value), min_value)
 
-    def stop(self):
-        self.target_RPM = 0
-        self.turret_motor.stopMotor()
-        self.pid.reset()
+    def centerTurret(self, alignment):
+            #normalized_alignment = self.normalize(alignment, 1080)#chutando que a camera tem 1080
 
-    def update(self):
-        if self.target_RPM == 0:
-            return
-        output = self.pid.calculate(self.encoder.getVelocity(), self.target_RPM)
-        output += self.feedforward.calculate(self.target_RPM)
-        output = max(min(output, 1.0), -1.0)
-        self.turret_motor.set(output)
+            output = self.pid.calculate(alignment, 0)
 
-    def isReady(self):
-        return abs(self.encoder.getVelocity() - self.target_RPM) < 100
+            output = self.clamp(output, -1,1)
+
+            self.turret_motor.setVoltage(output * 12)
+
+    def commandCenterTurret(self,alignment) -> command:
+         return self.run(lambda: self.centerTurret(alignment))
