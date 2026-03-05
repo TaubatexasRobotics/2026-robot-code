@@ -20,6 +20,6 @@ class Shooter():
             self.is_enabled = not self.is_enabled
         
         if self.is_enabled:
-            self.shoot(-1)
+            self.shoot(1)
         else:
             self.shoot(0)
