@@ -26,6 +26,10 @@ class AprilTagCamera(ABC):
     @abstractmethod
     def getYawFromBestTarget(self) -> float:
         pass
+    
+    @abstractmethod
+    def getRangeFromBestTarget(self) -> float:
+        pass
 
 class PhotonVisionCamera(AprilTagCamera):
     def __init__(self, camera: str) -> None:
@@ -38,6 +42,19 @@ class PhotonVisionCamera(AprilTagCamera):
             if target is not None:
                 return target.getYaw()
         return -1
+
+    def getRangeFromBestTarget(self) -> float:
+        result = self.camera.getLatestResult()
+        if result.hasTargets():
+            target = result.getBestTarget()
+            if target is not None:
+                return Utils.calculateDistanceToTargetMeters(
+                    constants.kCameraHeightMeters,
+                    constants.kTargetHeightMeters,
+                    constants.kCameraPitchRadians,
+                    degreesToRadians(target.getPitch()),
+                )
+        return 0
 
     def getYawFromTag(self, tag: int) -> float:
         results = self.camera.getAllUnreadResults()
@@ -63,8 +80,7 @@ class PhotonVisionCamera(AprilTagCamera):
                     )
                     return target.getYaw(), target_range
         return -1, -1
-
-
+    
 class LimelightCamera(AprilTagCamera):
     def __init__(self, camera: str) -> None:
         self.limelight = None
@@ -95,6 +111,9 @@ class LimelightCamera(AprilTagCamera):
         return 0, 0
     
     def getYawFromBestTarget(self) -> float:
+        return 0
+    
+    def getRangeFromBestTarget(self) -> float:
         return 0
 
 class PixyFuelDetector(Subsystem):

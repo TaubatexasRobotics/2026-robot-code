@@ -7,8 +7,8 @@ from rev import (
     SparkBaseConfig,
 )
 from commands2 import Subsystem, Command
+from camera import AprilTagCamera
 from wpimath.controller import PIDController
-from wpimath.units import rotationsPerMinuteToRadiansPerSecond
 import constants
 
 class Shooter(Subsystem):
@@ -42,3 +42,14 @@ class Shooter(Subsystem):
 
     def deactivateFlywheel(self) -> Command:
         return self.run(lambda: self.flywheel.set(0))
+
+    def hoodUp(self) -> Command:
+        return self.run(lambda: self.hood.set(0.5))
+
+    def hoodDown(self) -> Command:
+        return self.run(lambda: self.hood.set(-0.5))
+    
+    def openHoodByDistanceOfTag(self, camera: AprilTagCamera) -> Command:
+        range = camera.getRangeFromBestTarget()
+        rotation = self.hood_pid.calculate(range, 0)
+        return self.run(lambda: self.hood.set(rotation))

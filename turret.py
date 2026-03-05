@@ -1,8 +1,10 @@
 from rev import SparkMax, SparkLowLevel
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
-from commands2 import Subsystem, Command
+from commands2 import Subsystem, Command, ParallelCommandGroup
 from utils import Utils
 from camera import AprilTagCamera
+from typing import Callable, Optional
+from led import LEDController
 import constants
 
 
@@ -14,15 +16,30 @@ class Turret(Subsystem):
         self.pid.setTolerance(0.1)
         # self.target_RPM = 4500
         self.feedforward = SimpleMotorFeedforwardRadians(0, 0.002)
-
-        self.setDefaultCommand(self.stopYaw())
     
     def activateYawClockwise(self) -> Command:
         return self.run(lambda: self.yaw.set(0.5))
 
-    def followYawTag(self, camera: AprilTagCamera) -> Command:
+    def activateYaw(self, rotate: Callable[[], float]) -> Command:
+        return self.run(lambda: self.yaw.set(rotate()))
+
+    def followYawTag(self, camera: AprilTagCamera, led: Optional[LEDController]=None) -> Command:
         yaw = camera.getYawFromBestTarget()
-        rotation = self.pid.calculate(yaw, 0) if yaw != -1 else 0
+        rotation = 0
+        if yaw != -1:
+            rotation = self.pid.calculate(yaw, 0) 
+            if led is not None:
+                return ParallelCommandGroup(
+                        led.blinkGreen(),
+                        self.run(lambda: self.yaw.set(rotation))
+                    )
+
+        if led is not None:
+            return ParallelCommandGroup(
+                    led.red(),
+                    self.run(lambda: self.yaw.set(rotation))
+                )
+
         return self.run(lambda: self.yaw.set(rotation))
 
     def stopYaw(self) -> Command:

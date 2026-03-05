@@ -53,6 +53,7 @@ class Drivetrain(Subsystem):
         self.drivetrain.setMaxOutput(1.0)
 
         self.field = Field2d()
+        self.slowMode = False
 
         config = SparkMaxConfig()
 
@@ -208,7 +209,14 @@ class Drivetrain(Subsystem):
     def arcadeDrive(
         self, speed: Callable[[], float], rotate: Callable[[], float]
     ) -> Command:
+        if self.slowMode:
+            return self.run(
+                lambda: self.drivetrain.arcadeDrive(speed() * 0.5, rotate() * 0.5)
+            )
         return self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate()))
+
+    def setSlowMode(self) -> Command:
+        return self.run(lambda: setattr(self, "slowMode", not self.slowMode))
 
     def cheesyDrive(
         self,
@@ -265,7 +273,7 @@ class Drivetrain(Subsystem):
         if yaw != -1:
             return PIDCommand(
                 PIDController(*constants.kDrivetrainPID[:3]),
-                yaw,
+                lambda: yaw,
                 0,
                 lambda output: self.drivetrain.arcadeDrive(0, output),
                 self,
@@ -278,30 +286,28 @@ class Drivetrain(Subsystem):
 
         if yaw != -1:
             return SequentialCommandGroup(
-                [
-                    PIDCommand(
-                        PIDController(*constants.kDrivetrainPID),
-                        yaw,
-                        0,
-                        lambda output: self.drivetrain.arcadeDrive(0, output),
-                        self,
-                    ),
-                    PIDCommand(
-                        PIDController(*constants.kDrivetrainPID),
-                        range,
-                        constants.kGoalRangeMeters,
-                        lambda output: self.drivetrain.arcadeDrive(output, 0),
-                        self,
-                    ),
-                ]
+                PIDCommand(
+                    PIDController(*constants.kDrivetrainPID[:3]),
+                    lambda: yaw,
+                    0,
+                    lambda output: self.drivetrain.arcadeDrive(0, output),
+                    self,
+                ),
+                PIDCommand(
+                    PIDController(*constants.kDrivetrainPID[:3]),
+                    lambda:range,
+                    constants.kGoalRangeMeters,
+                    lambda output: self.drivetrain.arcadeDrive(output, 0),
+                    self,
+                ),
             )
 
         return self.run(lambda: self.drivetrain.arcadeDrive(0, 0))
 
     def rotate(self, angle: float) -> Command:
         return PIDCommand(
-            PIDController(*constants.kDrivetrainPID),
-            self.navx.getAngle(),
+            PIDController(*constants.kDrivetrainPID[:3]),
+            lambda: self.navx.getAngle(),
             angle,
             lambda output: self.drivetrain.arcadeDrive(0, output),
             self,
