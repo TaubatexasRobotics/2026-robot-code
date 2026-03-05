@@ -24,7 +24,7 @@ class LEDController(Subsystem):
         return self.run(lambda: self.changeColor("a"))
 
     def setExtraLED(self, status: bool) -> None:
-        return self.extraLED.set(status)
+        self.extraLED.set(status)
 
     def changeColor(self, char: str) -> None:
         if self.status == char:
