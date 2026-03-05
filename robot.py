@@ -1,7 +1,7 @@
 import wpilib
 from intake import Intake
 from indexer import Indexer
-from crest import Crest
+from hood import Hood
 from shooter import Shooter
 from turret import Turret
 from drivetrain import Drivetrain
@@ -15,7 +15,7 @@ class MyRobot(TimedCommandRobot):
     def robotInit(self):
         self.mechanisms = {
             "intake": Intake(),
-            "crest": Crest(),
+            "crest": Hood(),
             "drivetrain": Drivetrain(),
             "shooter": Shooter(),
             "indexer": Indexer(),

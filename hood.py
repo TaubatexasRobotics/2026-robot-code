@@ -1,7 +1,7 @@
 from utils import clamp
 import rev
 from wpimath.controller import PIDController, ArmFeedforward
-from wpilib import SmartDashboard
+from wpilib import SmartDashboard, XboxController
 
 gear_ratio = 11.52
 HOOD_MOTOR_ID = 53
@@ -19,12 +19,13 @@ class Hood:
         self.pid.setTolerance(0.1)
         self.encoder.setPosition(0)
         
-        SmartDashboard.putNumber("Hood/FF/Ka", self.ff.getKa())
-        SmartDashboard.putNumber("Hood/FF/Kg", self.ff.getKg())
-        SmartDashboard.putNumber("Hood/FF/Kv", self.ff.getKv())
-        SmartDashboard.putNumber("Hood/FF/Ks", self.ff.getKs())
+        # TODO: set controller to 1 for copilot
+        self.joystick = XboxController(0)
+        
+
         
         SmartDashboard.putNumber("Hood/set voltage", 7)
+        
         
     def set_position(self, position):
         self.encoder.setPosition(position)
@@ -43,6 +44,13 @@ class Hood:
         SmartDashboard.putNumber("Hood/read voltage", self.get_voltage())
         SmartDashboard.putNumber("Hood/encoder", self.motor.getEncoder().getPosition())
         SmartDashboard.putNumber("Hood/angle", self.get_angle())
+        SmartDashboard.putNumber("Hood/motor", self.motor.get())
+        
+        SmartDashboard.putNumber("Hood/FF/Ka", self.ff.getKa())
+        SmartDashboard.putNumber("Hood/FF/Kg", self.ff.getKg())
+        SmartDashboard.putNumber("Hood/FF/Kv", self.ff.getKv())
+        SmartDashboard.putNumber("Hood/FF/Ks", self.ff.getKs())
+        
         
     def set_voltage(self, voltage):
         self.motor.setVoltage(voltage)
@@ -63,10 +71,15 @@ class Hood:
         self.move_to_setpoint()
         
     def teleopPeriodic(self):
-        voltage = SmartDashboard.getNumber("Hood/set voltage", 0)
-        if voltage != 0:
-            self.set_voltage(voltage)
+        
+        y_value = self.joystick.getRightY()
+        if 0.1 > y_value > -0.1:
+            self.motor.set(0)
         else:
-            self.move_to_setpoint()
-
-
+            self.motor.set(y_value)
+        
+        # voltage = SmartDashboard.getNumber("Hood/set voltage", 0)
+        # if voltage != 0:
+        #     self.set_voltage(voltage)
+        # else:
+        #     self.move_to_setpoint()
