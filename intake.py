@@ -14,6 +14,7 @@ class Intake(Subsystem):
         SmartDashboard.putNumber("up", 0.5)
         SmartDashboard.putNumber("down", 0.5)
 
+        SmartDashboard.putBoolean("pivotUp", self.pivotUp)
         self.pivot.setInverted(True)
         self.setDefaultCommand(self.stopGamePieceCollector())
 
@@ -24,13 +25,14 @@ class Intake(Subsystem):
         elapsed = Timer.getFPGATimestamp() - self.lastBurstTime
         percent = 0
 
+        SmartDashboard.putBoolean("pivotUp", self.pivotUp)
         kPivotTimeUp = SmartDashboard.getNumber("up", 0)
         kPivotTimeDown = SmartDashboard.getNumber("down", 0)
 
         if self.pivotUp:
-            percent = 1 if elapsed < kPivotTimeUp else 0
+            percent = 0.5 if elapsed < kPivotTimeUp else 0
         else:
-            percent = -1 if elapsed < kPivotTimeDown else 0
+            percent = -0.7 if elapsed < kPivotTimeDown else 0
 
         self.pivot.set(ControlMode.PercentOutput, percent)
 

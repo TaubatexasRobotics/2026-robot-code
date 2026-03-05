@@ -4,13 +4,14 @@ from autonomous.drivestraightpath import DriveStraightPath
 from commands2 import TimedCommandRobot, CommandScheduler, Command, ParallelCommandGroup, SequentialCommandGroup
 from typing import Optional
 from led import LEDController
-from commands2.button import JoystickButton
+from commands2.button import JoystickButton, POVButton
 from intake import Intake
 from wpilib import SmartDashboard, SendableChooser, DriverStation, Joystick
 from shooter import Shooter
 from turret import Turret
 from camera import PhotonVisionCamera
 from indexer import Indexer
+from commands2.cmd import run
 
 class Robot(TimedCommandRobot):
     autonomous: Optional[Command] = None
@@ -32,43 +33,41 @@ class Robot(TimedCommandRobot):
         return rightTrigger + leftTrigger
 
     def robotInit(self) -> None:
+        self.led.rainbow().schedule()
+
         JoystickButton(self.driverJoystick, 5).whileTrue(
             ParallelCommandGroup(
                 self.shooter.activateFlywheel(),
-                self.indexer.activateFeed(),
-                self.intake.collectGamePiece()
+                self.intake.releaseGamePiece(),
+                self.led.blue()
             )
         )
         
-        JoystickButton(self.driverJoystick, 5).onTrue(self.led.red())
-
         JoystickButton(self.driverJoystick, 1).onTrue(self.drivetrain.setSlowMode())
-        JoystickButton(self.driverJoystick, 3).onTrue(
-            SequentialCommandGroup(
-                self.intake.up(),
-                self.intake.down()
-            )
-        )
 
         JoystickButton(self.driverJoystick, 2).whileTrue(
-            SequentialCommandGroup(
-                self.intake.down(),
-                self.intake.releaseGamePiece()
-            )
+            self.indexer.activateFeed()
         )
         
         JoystickButton(self.driverJoystick, 6).whileTrue(
             self.turret.followYawTag(self.turretCamera, self.led)
         )
 
-        '''
-        JoystickButton(self.driverJoystick, 6).whileTrue(
-            ParallelCommandGroup(
-                self.turret.followYawTag(self.turretCamera, self.led)
-                self.shooter.openHoodByDistanceOfTag(self.turretCamera)
-            )
+        JoystickButton(self.driverJoystick, 7).whileTrue(
+            self.shooter.hoodDown()
         )
-        '''
+
+        JoystickButton(self.driverJoystick, 8).whileTrue(
+            self.shooter.hoodUp()
+        )
+
+        POVButton(self.driverJoystick, 90).whileTrue(
+            self.intake.up()
+        )
+
+        POVButton(self.driverJoystick, 270).whileTrue(
+            self.intake.down()
+        )
 
         self.turret.setDefaultCommand(
             self.turret.activateYaw(lambda: self.driverJoystick.getRawAxis(4))
@@ -76,7 +75,7 @@ class Robot(TimedCommandRobot):
 
         self.drivetrain.setDefaultCommand(
             self.drivetrain.arcadeDrive(
-                lambda: self.combineAxis(),
+                lambda: -self.combineAxis(),
                 lambda: self.driverJoystick.getRawAxis(0)
             )
         )
@@ -85,9 +84,9 @@ class Robot(TimedCommandRobot):
             "Drive Straight Path", DriveStraightPath(self.drivetrain, 5)
         )
         SmartDashboard.putData("Auto Chooser", self.autoChooser)
-    
+
     def teleopExit(self) -> None:
-        self.led.rainbow()
+        self.led.blinkGreen().schedule()
 
     def autonomousInit(self) -> None:
         DriverStation.silenceJoystickConnectionWarning(True)

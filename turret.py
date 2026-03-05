@@ -3,8 +3,8 @@ from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
 from commands2 import Subsystem, Command, ParallelCommandGroup
 from utils import Utils
 from camera import AprilTagCamera
-from typing import Callable, Optional
 from led import LEDController
+from typing import Callable
 import constants
 
 
@@ -23,30 +23,22 @@ class Turret(Subsystem):
     def activateYaw(self, rotate: Callable[[], float]) -> Command:
         return self.run(lambda: self.yaw.set(rotate()))
 
-    def followYawTag(self, camera: AprilTagCamera, led: Optional[LEDController]=None) -> Command:
+    def followYawTag(self, camera: AprilTagCamera, led: LEDController) -> Command:
         yaw = camera.getYawFromBestTarget()
         rotation = 0
         if yaw != -1:
-            rotation = self.pid.calculate(yaw, 0) 
-            if led is not None:
-                return ParallelCommandGroup(
-                        led.blinkGreen(),
-                        self.run(lambda: self.yaw.set(rotation))
-                    )
-
-        if led is not None:
-            return ParallelCommandGroup(
-                    led.red(),
-                    self.run(lambda: self.yaw.set(rotation))
-                )
-
+            rotation = self.pid.calculate(yaw, 0)
+            led.blinkGreen().schedule()
+        else:
+            led.red().schedule()
+        
         return self.run(lambda: self.yaw.set(rotation))
 
     def stopYaw(self) -> Command:
         return self.run(lambda: self.yaw.set(0))
 
     def activateYawCounterClockwise(self) -> Command:
-        return self.run(lambda: self.yaw.set(-0.5))
+        return self.run(lambda: self.yaw.set(-0.7))
 
     def clamp(self,value, min_value, max_value):
         return max(min(value, max_value), min_value)

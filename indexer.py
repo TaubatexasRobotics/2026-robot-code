@@ -10,7 +10,7 @@ class Indexer(Subsystem):
         self.setDefaultCommand(self.activateExpulse())
 
     def feed(self) -> None:
-        self.front_roller.set(ControlMode.PercentOutput, -0.5)
+        self.front_roller.set(ControlMode.PercentOutput, -0.1)
         self.back_roller.set(ControlMode.PercentOutput, -0.7)
     
     def expulse(self) -> None:

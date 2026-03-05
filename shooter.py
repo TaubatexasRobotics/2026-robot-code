@@ -35,7 +35,7 @@ class Shooter(Subsystem):
             config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters
         )
 
-        self.setDefaultCommand(self.deactivateFlywheel())
+        self.setDefaultCommand(self.run(lambda: self.deactivate()))
 
     def activateFlywheel(self) -> Command:
         return self.run(lambda: self.flywheel.set(0.4))
@@ -43,11 +43,15 @@ class Shooter(Subsystem):
     def deactivateFlywheel(self) -> Command:
         return self.run(lambda: self.flywheel.set(0))
 
+    def deactivate(self) -> None:
+        self.flywheel.set(0)
+        self.hood.set(0)
+    
     def hoodUp(self) -> Command:
-        return self.run(lambda: self.hood.set(0.5))
+        return self.run(lambda: self.hood.set(0.1))
 
     def hoodDown(self) -> Command:
-        return self.run(lambda: self.hood.set(-0.5))
+        return self.run(lambda: self.hood.set(-0.8))
     
     def openHoodByDistanceOfTag(self, camera: AprilTagCamera) -> Command:
         range = camera.getRangeFromBestTarget()
