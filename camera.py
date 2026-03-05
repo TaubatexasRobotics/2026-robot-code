@@ -1,0 +1,56 @@
+from photonlibpy import PhotonCamera
+from typing import Optional, Tuple, List
+from utils import calculateDistanceToTargetMeters
+from abc import ABC, abstractmethod
+from limelight import Limelight
+from limelightresults import parse_results
+from wpinet import PortForwarder
+from photonlibpy.targeting.photonTrackedTarget import PhotonTrackedTarget
+from wpimath.units import degreesToRadians
+from wpilib import RobotBase, SerialPort, CameraServer
+
+
+class AprilTagCamera(ABC):
+    @abstractmethod
+    def getYawFromTag(self, tag: int) -> float:
+        pass
+
+    @abstractmethod
+    def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
+        pass
+
+class PhotonVisionCamera(AprilTagCamera):
+    def __init__(self, camera: str) -> None:
+        self.camera = PhotonCamera(camera)
+
+    def getBestTarget(self) -> Optional[PhotonTrackedTarget]:
+        result = self.camera.getLatestResult()
+        if result.hasTargets():
+            target = result.getBestTarget()
+            return target
+        return None
+
+    def getYawFromTag(self, tag: int) -> float:
+        results = self.camera.getAllUnreadResults()
+        if len(results) > 0:
+            result = results[-1]
+            for target in result.getTargets():
+                if target.getFiducialId() == tag:
+                    return target.getYaw()
+        return -1
+
+    def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
+        results = self.camera.getAllUnreadResults()
+        target_range = 0
+        if len(results) > 0:
+            result = results[-1]
+            for target in result.getTargets():
+                if target.getFiducialId() == tag:
+                    target_range = calculateDistanceToTargetMeters(
+                       0,0,0,
+                        degreesToRadians(target.getPitch()),
+                    )
+                    return target.getYaw(), target_range
+        return -1, -1
+
+
