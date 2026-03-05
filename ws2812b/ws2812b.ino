@@ -5,6 +5,7 @@
 
 CRGB leds[NUM_LEDS];
 uint8_t waveOffset = 0;
+byte received;
 
 void changeColor(int red, int green, int blue) {
   for (int i = 0; i < NUM_LEDS; i++)
@@ -24,30 +25,30 @@ void rainbow() {
 
 void blinkGreen() {
   changeColor(0, 255, 0);
-  delay(500);
+  delay(20);
   changeColor(0, 0, 0);
+  delay(20);
 }
 
 void updateSelectedColor() {
-  if (Serial.available() > 0) {
-    byte received = Serial.read();
-    if (received == 'r')
-      changeColor(255, 0, 0);
-    else if (received == 'g')
-      changeColor(0, 255, 0);
-    else if (received == 'b')
-      changeColor(0, 0, 255);
-    else if (received == 'w')
-      blinkGreen();
-    else if (received == 'a')
-      rainbow();
-  }
+  if (Serial.available() > 0) received = Serial.read();
+
+  if (received == 'r')
+    changeColor(255, 0, 0);
+  else if (received == 'g')
+    changeColor(0, 255, 0);
+  else if (received == 'b')
+    changeColor(0, 0, 255);
+  else if (received == 'w')
+    blinkGreen();
+  else if (received == 'a')
+    rainbow();
 }
 
 void setup() {
   Serial.begin(9600);
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
-  changeColor(255, 0, 0);
+  received = 'a';
 }
 
 void loop() {
