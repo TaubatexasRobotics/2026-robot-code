@@ -11,6 +11,7 @@ from wpimath.units import degreesToRadians
 from pixy2py.pixy2 import Pixy2
 from pixy2py.pixy2ccc import Pixy2CCC
 from wpilib import RobotBase, SerialPort, CameraServer
+from commands2 import Subsystem
 
 
 class AprilTagCamera(ABC):
@@ -22,16 +23,38 @@ class AprilTagCamera(ABC):
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         pass
 
+    @abstractmethod
+    def getYawFromBestTarget(self) -> float:
+        pass
+    
+    @abstractmethod
+    def getRangeFromBestTarget(self) -> float:
+        pass
+
 class PhotonVisionCamera(AprilTagCamera):
     def __init__(self, camera: str) -> None:
         self.camera = PhotonCamera(camera)
-
-    def getBestTarget(self) -> Optional[PhotonTrackedTarget]:
+    
+    def getYawFromBestTarget(self) -> float:
         result = self.camera.getLatestResult()
         if result.hasTargets():
             target = result.getBestTarget()
-            return target
-        return None
+            if target is not None:
+                return target.getYaw()
+        return -1
+
+    def getRangeFromBestTarget(self) -> float:
+        result = self.camera.getLatestResult()
+        if result.hasTargets():
+            target = result.getBestTarget()
+            if target is not None:
+                return Utils.calculateDistanceToTargetMeters(
+                    constants.kCameraHeightMeters,
+                    constants.kTargetHeightMeters,
+                    constants.kCameraPitchRadians,
+                    degreesToRadians(target.getPitch()),
+                )
+        return 0
 
     def getYawFromTag(self, tag: int) -> float:
         results = self.camera.getAllUnreadResults()
@@ -57,8 +80,7 @@ class PhotonVisionCamera(AprilTagCamera):
                     )
                     return target.getYaw(), target_range
         return -1, -1
-
-
+    
 class LimelightCamera(AprilTagCamera):
     def __init__(self, camera: str) -> None:
         self.limelight = None
@@ -87,27 +109,38 @@ class LimelightCamera(AprilTagCamera):
 
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
+    
+    def getYawFromBestTarget(self) -> float:
+        return 0
+    
+    def getRangeFromBestTarget(self) -> float:
+        return 0
 
-class PixyFuelDetector:
+class PixyFuelDetector(Subsystem):
     def __init__(self) -> None:
         self.pixy = Pixy2(Pixy2.LinkType.SPI)
         self.pixy.init()
         self.pixy.setLamp(1, 1)
-        self.pixy.setLED(255, 255, 255)
+        self.pixy.setLED(red=255, green=255, blue=255)
 
     def getBiggestBlock(self) -> Optional[Pixy2CCC.Block]:
-        blockCount: int = pixy.getCCC().getBlocks(False, Pixy2CCC.CCC_SIG1, 25)
+        blockCount: int = self.pixy.getCCC().getBlocks(False, Pixy2CCC.CCC_SIG1, 25)
         print("Found " + str(blockCount) + " blocks!")
         if blockCount <= 0:
             return None
 
         blocks = self.pixy.getCCC().getBlockCache()
-        largestBlock: Optional[PixyCCC.Block] = None
+        if blocks:
+            largestBlock: Optional[Pixy2CCC.Block] = None
 
-        for block in blocks:
-            if largestBlock is None:
-                largestBlock = block
-            elif block.getWidth() > largestBlock.getWidth():
-                largestBlock = block
+            for block in blocks:
+                if largestBlock is None:
+                    largestBlock = block
+                elif block.getWidth() > largestBlock.getWidth():
+                    largestBlock = block
 
-        return largestBlock
+            return largestBlock
+        return None
+
+    def periodic(self) -> None:
+        self.getBiggestBlock()

@@ -6,6 +6,7 @@
 """
 import wpilib
 import pixy2py.links.link
+import hal
 
 class SPILink(pixy2py.links.link.Link):
     """Link for communicating over Serial Peripheral Interface (SPI)."""
@@ -29,9 +30,9 @@ class SPILink(pixy2py.links.link.Link):
         # Use the value to open the port and configure it.
         self.spi = wpilib.SPI(spi_port)
         self.spi.setClockRate(SPILink.PIXY_SPI_CLOCKRATE)
-        self.spi.setMSBFirst()
-        self.spi.setSampleDataOnTrailingEdge()
-        self.spi.setClockActiveLow()
+        #self.spi.setMSBFirst()
+        #self.spi.setSampleDataOnTrailingEdge()
+        #self.spi.setClockActiveLow()
         self.spi.setChipSelectActiveLow()
 
     # def open(self, link_arg):
