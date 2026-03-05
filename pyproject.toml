@@ -28,4 +28,5 @@ requires = [
     "robotpy-rev",
     "robotpy-ctre",
     "robotpy-navx",
+    "photonlibpy",
 ]

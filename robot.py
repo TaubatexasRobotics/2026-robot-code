@@ -6,6 +6,7 @@ from shooter import Shooter
 from turret import Turret
 from drivetrain import Drivetrain
 from commands2 import TimedCommandRobot
+from camera import PhotonVisionCamera
 from utils import for_each
 
 def log_exception(e):
@@ -19,7 +20,7 @@ class MyRobot(TimedCommandRobot):
             "drivetrain": Drivetrain(),
             "shooter": Shooter(),
             "indexer": Indexer(),
-            "turret": Turret()
+            "turret": Turret(),
         }
         
     def robotPeriodic(self):

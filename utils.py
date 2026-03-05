@@ -1,6 +1,7 @@
 CURRENT_LEVEL = "INFO"
 
 from wpilib import DataLogManager
+from math import tan
 def log_exception(e):
     DataLogManager.log(repr(e))
 
@@ -42,3 +43,13 @@ def for_each(mechanisms_dict, method_name):
                 getattr(mechanism, method_name)()
         except BaseException as e:
             log_exception(e)   
+
+def calculateDistanceToTargetMeters(
+        cameraHeightMeters: float,
+        targetHeightMeters: float,
+        cameraPitchRadians: float,
+        targetPitchRadians: float,
+    ) -> float:
+        return (targetHeightMeters - cameraHeightMeters) / tan(
+            cameraPitchRadians + targetPitchRadians
+        )
