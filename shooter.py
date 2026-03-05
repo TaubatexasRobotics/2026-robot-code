@@ -7,7 +7,7 @@ class Shooter():
     def __init__(self):
         self.motor = rev.SparkMax(SHOOTER_MOTOR_ID, rev.SparkLowLevel.MotorType.kBrushless)
         self.is_enabled = False
-        self.joystick = XboxController(0)
+        self.joystick = XboxController(1)
         
     def update_dashboard(self):
         SmartDashboard.putBoolean("Shooter/shooter enabled", self.is_enabled)

@@ -20,9 +20,7 @@ class Hood:
         self.encoder.setPosition(0)
         
         # TODO: set controller to 1 for copilot
-        self.joystick = XboxController(0)
-        
-
+        self.joystick = XboxController(1)
         
         SmartDashboard.putNumber("Hood/set voltage", 7)
         
@@ -72,7 +70,7 @@ class Hood:
         
     def teleopPeriodic(self):
         
-        y_value = self.joystick.getRightY()
+        y_value = float(self.joystick.getRightY())
         if 0.1 > y_value > -0.1:
             self.motor.set(0)
         else:

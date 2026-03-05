@@ -4,7 +4,6 @@ from wpilib import SmartDashboard, XboxController
 PIVOT_MOTOR_ID = 4
 ROLL_MOTOR_ID = 1
 
-joystick = XboxController(0)
 
 class Intake:
     def __init__(self):
@@ -12,16 +11,20 @@ class Intake:
         self.pivot_motor = phoenix5.WPI_VictorSPX(PIVOT_MOTOR_ID)
         self.roll_motor = phoenix5.WPI_VictorSPX(ROLL_MOTOR_ID)
         
+        self.joystick = XboxController(0)
+        
     def update_dashboard(self):
         SmartDashboard.putBoolean("Intake/intake enabled", self.is_enabled)
+        SmartDashboard.putNumber("Intake/pivot motor", self.pivot_motor.get())
+        SmartDashboard.putNumber("Intake/roll motor", self.roll_motor.get())
         
-    def turnDown(self):
+    def pivotDown(self):
         self.pivot_motor.set(-0.7)
 
     def stopArm(self):
         self.pivot_motor.set(0)   
 
-    def turnUp(self):
+    def pivotUp(self):
         self.pivot_motor.set(0.7)    
 
     def receive(self):    
@@ -34,21 +37,25 @@ class Intake:
         self.roll_motor.set(1)
         
     def teleopPeriodic(self):
-        if joystick.getBButtonPressed():
+        if self.joystick.getXButtonPressed():
             self.is_enabled = not self.is_enabled  
 
         if self.is_enabled:
             self.receive()
-        
-        else:
-            if joystick.getXButton():
-                self.drop()
-            else:
-                self.stopRoll()
+            
+        if not self.is_enabled:
+            self.stopRoll()
+            
+        if self.joystick.getYButton():
+            self.is_enabled = False
+            self.drop()
 
-        if joystick.getAButton():
-            self.turnDown()
-        elif joystick.getYButton():
-            self.turnUp()
+        pov = self.joystick.getPOV()
+
+        #TODO -> use or logic to also accept diagonals (eg. POVDownLeft and POVDownRight)
+        if pov in (180, 135, 225):
+            self.pivotDown()
+        elif pov in (0, 45, 315):
+            self.pivotUp()
         else:
             self.stopArm()

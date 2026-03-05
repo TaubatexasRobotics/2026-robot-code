@@ -10,13 +10,13 @@ class Turret:
         self.yaw_encoder = self.yaw_motor.getEncoder()
         self.pid = PIDController(.01, .0, .0)
         SmartDashboard.putData("Turret/PID", self.pid)
-        self.joystick = XboxController(0)      
+        self.joystick = XboxController(1)      
         
     def update_dashboard(self):
         SmartDashboard.putNumber("Turret/yaw encoder", self.yaw_motor.getEncoder().getPosition())
         SmartDashboard.putData("Turret/PID", self.pid)
         SmartDashboard.putNumber("Turret/yaw", self.yaw_motor.get())
-        SmartDashboard.putNumber("Turret/left x axis", self.joystick.getLeftX())
+        SmartDashboard.putNumber("Turret/left x axis", float(self.joystick.getLeftX()))
         SmartDashboard.putNumber("Turret/Motor", self.yaw_motor.get())
         
     def teleopPeriodic(self):

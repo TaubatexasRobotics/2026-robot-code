@@ -14,7 +14,7 @@ class Indexer():
         SmartDashboard.putNumber("Indexer/redline", 0)
         SmartDashboard.putBoolean("Indexer/redline enabled", True)
 
-        self.joystick = XboxController(0)
+        self.joystick = XboxController(1)
     
     def update_dashboard(self):
         SmartDashboard.putBoolean("Indexer/cim enabled", self.cim.get())
