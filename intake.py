@@ -15,7 +15,7 @@ class Intake(Subsystem):
         SmartDashboard.putNumber("down", 0.5)
 
         self.pivot.setInverted(True)
-        self.setDefaultCommand(self.run(lambda: self.stopGamePieceCollector()))
+        self.setDefaultCommand(self.stopGamePieceCollector())
 
     def isPivotUp(self) -> bool:
         return self.pivotUp
@@ -57,11 +57,11 @@ class Intake(Subsystem):
     def down(self) -> Command:
         return self.run(lambda: self.startPivotDown())
 
-    def collectGamePiece(self) -> None:
-        self.roller.set(ControlMode.PercentOutput, -1)
+    def collectGamePiece(self) -> Command:
+        return self.run(lambda: self.roller.set(ControlMode.PercentOutput, -1))
 
-    def stopGamePieceCollector(self) -> None:
-        self.roller.set(ControlMode.PercentOutput, 0)
+    def stopGamePieceCollector(self) -> Command:
+        return self.run(lambda: self.roller.set(ControlMode.PercentOutput, 0))
 
-    def releaseGamePiece(self) -> None:
-        self.roller.set(ControlMode.PercentOutput, 1)
+    def releaseGamePiece(self) -> Command:
+        return self.run(lambda: self.roller.set(ControlMode.PercentOutput, 1))

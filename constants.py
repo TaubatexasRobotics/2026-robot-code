@@ -21,7 +21,7 @@ kDrivetrainIdleMode = SparkBaseConfig.IdleMode.kBrake
 kDrivetrainPID = (0.2, 0, 0, ClosedLoopSlot.kSlot0)  # kP, kI, kD
 
 # PhotonVision
-kCameraName = "Camera7459"
+kCameraName = "camera ps3"
 kCameraHeightMeters = 0.83
 kTargetHeightMeters = 1.12
 kCameraPitchRadians = 0

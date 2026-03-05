@@ -23,16 +23,21 @@ class AprilTagCamera(ABC):
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         pass
 
+    @abstractmethod
+    def getYawFromBestTarget(self) -> float:
+        pass
+
 class PhotonVisionCamera(AprilTagCamera):
     def __init__(self, camera: str) -> None:
         self.camera = PhotonCamera(camera)
-
-    def getBestTarget(self) -> Optional[PhotonTrackedTarget]:
+    
+    def getYawFromBestTarget(self) -> float:
         result = self.camera.getLatestResult()
         if result.hasTargets():
             target = result.getBestTarget()
-            return target
-        return None
+            if target is not None:
+                return target.getYaw()
+        return -1
 
     def getYawFromTag(self, tag: int) -> float:
         results = self.camera.getAllUnreadResults()
@@ -88,6 +93,9 @@ class LimelightCamera(AprilTagCamera):
 
     def getYawAndRangeFromTag(self, tag: int) -> Tuple[float, float]:
         return 0, 0
+    
+    def getYawFromBestTarget(self) -> float:
+        return 0
 
 class PixyFuelDetector(Subsystem):
     def __init__(self) -> None:
@@ -103,15 +111,17 @@ class PixyFuelDetector(Subsystem):
             return None
 
         blocks = self.pixy.getCCC().getBlockCache()
-        largestBlock: Optional[PixyCCC.Block] = None
+        if blocks:
+            largestBlock: Optional[Pixy2CCC.Block] = None
 
-        for block in blocks:
-            if largestBlock is None:
-                largestBlock = block
-            elif block.getWidth() > largestBlock.getWidth():
-                largestBlock = block
+            for block in blocks:
+                if largestBlock is None:
+                    largestBlock = block
+                elif block.getWidth() > largestBlock.getWidth():
+                    largestBlock = block
 
-        return largestBlock
+            return largestBlock
+        return None
 
     def periodic(self) -> None:
         self.getBiggestBlock()

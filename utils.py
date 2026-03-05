@@ -18,10 +18,13 @@ class Utils:
     def readString(port: SerialPort) -> str:
         port_bytes = port.getBytesReceived()
         buffer = bytearray(port_bytes)
-        converted = port.read()
+        converted = port.read(buffer)
         return buffer[:converted].decode("ascii")
 
     @staticmethod
     def clamp(value, min_value, max_value):
         return max(min(value, max_value), min_value)
 
+    @staticmethod
+    def normalize(pixels, max_pixels):
+        return (pixels * 2 / max_pixels) -1
