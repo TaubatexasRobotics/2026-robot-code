@@ -41,7 +41,7 @@ class PhotonVisionCamera(AprilTagCamera):
             target = result.getBestTarget()
             if target is not None:
                 return target.getYaw()
-        return -1
+        return 0
 
     def getRangeFromBestTarget(self) -> float:
         result = self.camera.getLatestResult()

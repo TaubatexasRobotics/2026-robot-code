@@ -11,7 +11,6 @@ from shooter import Shooter
 from turret import Turret
 from camera import PhotonVisionCamera
 from indexer import Indexer
-from commands2.cmd import run
 
 class Robot(TimedCommandRobot):
     autonomous: Optional[Command] = None
@@ -27,9 +26,9 @@ class Robot(TimedCommandRobot):
     led: LEDController = LEDController()
     turretCamera: PhotonVisionCamera = PhotonVisionCamera(constants.kCameraName)
 
-    def combineAxis(self) -> float:
-        leftTrigger = -self.copilotJoystick.getRawAxis(2)
-        rightTrigger = self.copilotJoystick.getRawAxis(3)
+    def combineAxis(self, joystick: Joystick, left_axis, right_axis) -> float:
+        leftTrigger = -joystick.getRawAxis(left_axis)
+        rightTrigger = joystick.getRawAxis(right_axis)
 
         return rightTrigger + leftTrigger
 
@@ -37,11 +36,11 @@ class Robot(TimedCommandRobot):
         self.led.rainbow().schedule()
 
         #Driver Joystick
-        POVButton(self.driverJoystick, 90).whileTrue(
+        POVButton(self.driverJoystick, 0).whileTrue(
             self.intake.up()
         )
 
-        POVButton(self.driverJoystick, 270).whileTrue(
+        POVButton(self.driverJoystick, 180).whileTrue(
             self.intake.down()
         )
 
@@ -51,7 +50,7 @@ class Robot(TimedCommandRobot):
         
         self.drivetrain.setDefaultCommand(
             self.drivetrain.arcadeDrive(
-                lambda: -self.combineAxis(),
+                lambda: -self.combineAxis(self.driverJoystick, 2, 3),
                 lambda: self.driverJoystick.getRawAxis(0)
             )
         )
@@ -65,19 +64,16 @@ class Robot(TimedCommandRobot):
         )
 
         self.indexer.setDefaultCommand(
-            self.indexer.feedAxis(lambda: self.copilotJoystick.getRawAxis(3))
+             self.indexer.feedAxis(lambda: self.combineAxis(self.copilotJoystick, 2, 3))
         )
-        self.indexer.setDefaultCommand(
-            self.indexer.expulseAxis(lambda: self.copilotJoystick.getRawAxis(2))
-        )
-        
+
         self.turret.setDefaultCommand(
             self.turret.activateYaw(lambda: self.copilotJoystick.getRawAxis(0))
         )  
 
-        #JoystickButton(self.copilotJoystick, 1).whileTrue(
-        #    self.turret.followYawTag(self.turretCamera, self.led)
-        #)
+        JoystickButton(self.copilotJoystick, 1).whileTrue(
+            self.turret.followYawTag(self.turretCamera, self.led)
+        )
 
         POVButton(self.copilotJoystick, 90).toggleOnTrue(
             self.shooter.hoodUp()
