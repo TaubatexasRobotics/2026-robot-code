@@ -12,7 +12,7 @@ class Intake(Subsystem):
         self.lastBurstTime = 0.0
 
         SmartDashboard.putNumber("up", 0.5)
-        SmartDashboard.putNumber("down", 0.5)
+        SmartDashboard.putNumber("down", 0.9)
 
         SmartDashboard.putBoolean("pivotUp", self.pivotUp)
         self.pivot.setInverted(True)

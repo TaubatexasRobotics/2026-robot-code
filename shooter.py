@@ -41,7 +41,7 @@ class Shooter(Subsystem):
 
     def activateFlywheel(self) -> Command:
         return self.run(lambda: self.flywheel.set(0.45))
-
+    
     def deactivateFlywheel(self) -> Command:
         return self.run(lambda: self.flywheel.set(0))
 
@@ -53,7 +53,10 @@ class Shooter(Subsystem):
         return self.run(lambda: self.hood.set(0.1))
 
     def hoodUp(self) -> Command:
-        return self.run(lambda: self.hood.set(-0.8))
+        return self.run(lambda: self.hood.set(-0.1))
+    
+    def hoopUp_025(self) -> Command:
+        return self.run(lambda: self.hood.getClosedLoopController().setSetpoint(0.25))
     
     def openHoodByDistanceOfTag(self, camera: AprilTagCamera) -> Command:
         range = camera.getRangeFromBestTarget()

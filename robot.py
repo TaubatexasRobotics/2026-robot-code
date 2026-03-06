@@ -45,12 +45,10 @@ class Robot(TimedCommandRobot):
             self.intake.down()
         )
 
-        JoystickButton(self.driverJoystick, 3).whileTrue(self.intake.colectGamePiece())
+        JoystickButton(self.driverJoystick, 3).toggleOnTrue(self.intake.colectGamePiece())
 
         JoystickButton(self.driverJoystick, 4).whileTrue(self.intake.releaseGamePiece())
         
-        JoystickButton(self.driverJoystick, 1).onTrue(self.drivetrain.setSlowMode())
-
         self.drivetrain.setDefaultCommand(
             self.drivetrain.arcadeDrive(
                 lambda: -self.combineAxis(),
@@ -59,7 +57,7 @@ class Robot(TimedCommandRobot):
         )
 
         #Copilot Joystick
-        JoystickButton(self.copilotJoystick, 6).onTrue(
+        JoystickButton(self.copilotJoystick, 6).toggleOnTrue(
             ParallelCommandGroup(
                 self.shooter.activateFlywheel(),
                 self.led.blue()
@@ -77,11 +75,11 @@ class Robot(TimedCommandRobot):
             self.turret.activateYaw(lambda: self.copilotJoystick.getRawAxis(0))
         )  
 
-        JoystickButton(self.copilotJoystick, 1).whileTrue(
-            self.turret.followYawTag(self.turretCamera, self.led)
-        )
+        #JoystickButton(self.copilotJoystick, 1).whileTrue(
+        #    self.turret.followYawTag(self.turretCamera, self.led)
+        #)
 
-        POVButton(self.copilotJoystick, 90).onTrue(
+        POVButton(self.copilotJoystick, 90).toggleOnTrue(
             self.shooter.hoodUp()
         )
 

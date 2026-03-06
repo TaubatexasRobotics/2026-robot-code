@@ -13,17 +13,17 @@ class Indexer(Subsystem):
         self.front_roller.set(ControlMode.PercentOutput, -0.1)
         self.back_roller.set(ControlMode.PercentOutput, -0.8)
     
-    def feedAxis(self, axis) -> None:
-        self.front_roller.set(ControlMode.PercentOutput, axis * -0.1)
-        self.back_roller.set(ControlMode.PercentOutput, axis * -0.8)
+    def feedAxis(self, axis) -> Command:
+        self.front_roller.set(ControlMode.PercentOutput, axis() * -0.1)
+        self.back_roller.set(ControlMode.PercentOutput, axis() * -0.8)
 
     def expulse(self) -> None:
         self.front_roller.set(ControlMode.PercentOutput, 0)
         self.back_roller.set(ControlMode.PercentOutput, 0)
     
-    def expulseAxis(self, axis) -> None:
-        self.front_roller.set(ControlMode.PercentOutput, * 0.1)
-        self.back_roller.set(ControlMode.PercentOutput, axis * 0.8)  
+    def expulseAxis(self, axis) -> Command:
+        self.front_roller.set(ControlMode.PercentOutput, axis() * 0.1)
+        self.back_roller.set(ControlMode.PercentOutput, axis() * 0.8)  
 
     def activateFeed(self) -> Command:
         return self.run(lambda: self.feed())
