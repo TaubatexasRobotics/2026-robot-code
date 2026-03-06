@@ -28,13 +28,13 @@ class Intake:
         self.pivot_motor.set(0.7)    
 
     def receive(self):    
-        self.roll_motor.set(-1)
+        self.roll_motor.set(0.8)
 
     def stopRoll(self):
         self.roll_motor.set(0)    
 
     def drop(self):
-        self.roll_motor.set(1)
+        self.roll_motor.set(-0.8)
         
     def teleopPeriodic(self):
         if self.joystick.getXButtonPressed():

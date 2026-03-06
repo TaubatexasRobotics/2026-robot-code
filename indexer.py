@@ -27,11 +27,11 @@ class Indexer():
     
     def send_balls(self):
         self.cim.set(-1)
-        self.redline.set(-.5)
+        self.redline.set(-.15)
         
     def release_balls(self):
         self.cim.set(1)
-        self.redline.set(.5)
+        self.redline.set(.15)
         
     def stop(self):
         self.cim.set(0)
