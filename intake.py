@@ -59,11 +59,11 @@ class Intake(Subsystem):
     def down(self) -> Command:
         return self.run(lambda: self.startPivotDown())
 
-    def collectGamePiece(self) -> Command:
+    def releaseGamePiece(self) -> Command:
         return self.run(lambda: self.roller.set(ControlMode.PercentOutput, -1))
 
     def stopGamePieceCollector(self) -> Command:
         return self.run(lambda: self.roller.set(ControlMode.PercentOutput, 0))
 
-    def releaseGamePiece(self) -> Command:
+    def colectGamePiece(self) -> Command:
         return self.run(lambda: self.roller.set(ControlMode.PercentOutput, 1))

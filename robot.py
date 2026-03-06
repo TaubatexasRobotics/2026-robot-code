@@ -20,6 +20,7 @@ class Robot(TimedCommandRobot):
     drivetrain: Drivetrain = Drivetrain()
     intake: Intake = Intake()
     driverJoystick: Joystick = Joystick(constants.kJoystickDriverPort)
+    copilotJoystick : Joystick = Joystick(constants.kJoystickCoDriverPort)
     shooter: Shooter = Shooter()
     turret: Turret = Turret()
     indexer: Indexer = Indexer()
@@ -27,41 +28,15 @@ class Robot(TimedCommandRobot):
     turretCamera: PhotonVisionCamera = PhotonVisionCamera(constants.kCameraName)
 
     def combineAxis(self) -> float:
-        leftTrigger = -self.driverJoystick.getRawAxis(2)
-        rightTrigger = self.driverJoystick.getRawAxis(3)
+        leftTrigger = -self.copilotJoystick.getRawAxis(2)
+        rightTrigger = self.copilotJoystick.getRawAxis(3)
 
         return rightTrigger + leftTrigger
 
     def robotInit(self) -> None:
         self.led.rainbow().schedule()
 
-        JoystickButton(self.driverJoystick, 5).whileTrue(
-            ParallelCommandGroup(
-                self.indexer.activateFeed(),
-                self.shooter.activateFlywheel(),
-                self.intake.releaseGamePiece(),
-                self.led.blue()
-            )
-        )
-        
-        JoystickButton(self.driverJoystick, 1).onTrue(self.drivetrain.setSlowMode())
-
-        JoystickButton(self.driverJoystick, 2).whileTrue(
-            self.indexer.activateExpulse()
-        )
-        
-        JoystickButton(self.driverJoystick, 6).whileTrue(
-            self.turret.followYawTag(self.turretCamera, self.led)
-        )
-
-        JoystickButton(self.driverJoystick, 7).whileTrue(
-            self.shooter.hoodUpFF()
-        )
-
-        JoystickButton(self.driverJoystick, 8).whileTrue(
-            self.shooter.hoodDown()
-        )
-
+        #Driver Joystick
         POVButton(self.driverJoystick, 90).whileTrue(
             self.intake.up()
         )
@@ -70,15 +45,44 @@ class Robot(TimedCommandRobot):
             self.intake.down()
         )
 
-        self.turret.setDefaultCommand(
-            self.turret.activateYaw(lambda: self.driverJoystick.getRawAxis(4))
-        )        
+        JoystickButton(self.driverJoystick, 3).whileTrue(self.intake.colectGamePiece())
+
+        JoystickButton(self.driverJoystick, 4).whileTrue(self.intake.releaseGamePiece())
+        
+        JoystickButton(self.driverJoystick, 1).onTrue(self.drivetrain.setSlowMode())
 
         self.drivetrain.setDefaultCommand(
             self.drivetrain.arcadeDrive(
                 lambda: -self.combineAxis(),
                 lambda: self.driverJoystick.getRawAxis(0)
             )
+        )
+
+        #Copilot Joystick
+        JoystickButton(self.copilotJoystick, 6).onTrue(
+            ParallelCommandGroup(
+                self.shooter.activateFlywheel(),
+                self.led.blue()
+            )
+        )
+
+        self.indexer.setDefaultCommand(
+            self.indexer.feedAxis(lambda: self.copilotJoystick.getRawAxis(3))
+        )
+        self.indexer.setDefaultCommand(
+            self.indexer.expulseAxis(lambda: self.copilotJoystick.getRawAxis(2))
+        )
+        
+        self.turret.setDefaultCommand(
+            self.turret.activateYaw(lambda: self.copilotJoystick.getRawAxis(0))
+        )  
+
+        JoystickButton(self.copilotJoystick, 1).whileTrue(
+            self.turret.followYawTag(self.turretCamera, self.led)
+        )
+
+        POVButton(self.copilotJoystick, 90).onTrue(
+            self.shooter.hoodUp()
         )
 
         self.autoChooser.addOption(
