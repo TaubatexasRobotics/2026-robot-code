@@ -37,6 +37,7 @@ class Robot(TimedCommandRobot):
 
         JoystickButton(self.driverJoystick, 5).whileTrue(
             ParallelCommandGroup(
+                self.indexer.activateFeed(),
                 self.shooter.activateFlywheel(),
                 self.intake.releaseGamePiece(),
                 self.led.blue()
@@ -46,7 +47,7 @@ class Robot(TimedCommandRobot):
         JoystickButton(self.driverJoystick, 1).onTrue(self.drivetrain.setSlowMode())
 
         JoystickButton(self.driverJoystick, 2).whileTrue(
-            self.indexer.activateFeed()
+            self.indexer.activateExpulse()
         )
         
         JoystickButton(self.driverJoystick, 6).whileTrue(
@@ -54,11 +55,11 @@ class Robot(TimedCommandRobot):
         )
 
         JoystickButton(self.driverJoystick, 7).whileTrue(
-            self.shooter.hoodDown()
+            self.shooter.hoodUpFF()
         )
 
         JoystickButton(self.driverJoystick, 8).whileTrue(
-            self.shooter.hoodUp()
+            self.shooter.hoodDown()
         )
 
         POVButton(self.driverJoystick, 90).whileTrue(

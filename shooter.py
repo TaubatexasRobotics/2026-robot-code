@@ -8,7 +8,7 @@ from rev import (
 )
 from commands2 import Subsystem, Command
 from camera import AprilTagCamera
-from wpimath.controller import PIDController
+from wpimath.controller import PIDController, ArmFeedforward
 import constants
 
 class Shooter(Subsystem):
@@ -16,6 +16,7 @@ class Shooter(Subsystem):
         self.flywheel = SparkMax(
             constants.kFlywheelId, SparkLowLevel.MotorType.kBrushless
         )
+
         self.hood = SparkMax(constants.kHoodId, SparkMax.MotorType.kBrushless)
         self.hood_encoder = self.hood.getEncoder()
 
@@ -26,7 +27,7 @@ class Shooter(Subsystem):
         config = SparkMaxConfig()
 
         config.smartCurrentLimit(30)
-        config.setIdleMode(SparkBaseConfig.IdleMode.kCoast)
+        config.setIdleMode(SparkBaseConfig.IdleMode.kBrake)
 
         self.flywheel.configure(
             config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters
@@ -36,9 +37,10 @@ class Shooter(Subsystem):
         )
 
         self.setDefaultCommand(self.run(lambda: self.deactivate()))
+        self.armFeedForward = ArmFeedforward(1.2,1,1)
 
     def activateFlywheel(self) -> Command:
-        return self.run(lambda: self.flywheel.set(0.4))
+        return self.run(lambda: self.flywheel.set(0.45))
 
     def deactivateFlywheel(self) -> Command:
         return self.run(lambda: self.flywheel.set(0))
@@ -47,13 +49,16 @@ class Shooter(Subsystem):
         self.flywheel.set(0)
         self.hood.set(0)
     
-    def hoodUp(self) -> Command:
+    def hoodDown(self) -> Command:
         return self.run(lambda: self.hood.set(0.1))
 
-    def hoodDown(self) -> Command:
+    def hoodUp(self) -> Command:
         return self.run(lambda: self.hood.set(-0.8))
     
     def openHoodByDistanceOfTag(self, camera: AprilTagCamera) -> Command:
         range = camera.getRangeFromBestTarget()
         rotation = self.hood_pid.calculate(range, 0)
         return self.run(lambda: self.hood.set(rotation))
+    
+    def hoodUpFF(self) -> Command:
+        return self.run(lambda: self.hood.set(-0.8 + (-self.armFeedForward.calculate(0,self.hood.getEncoder().getVelocity()/12))))
