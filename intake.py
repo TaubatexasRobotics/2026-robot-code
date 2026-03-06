@@ -52,7 +52,6 @@ class Intake:
 
         pov = self.joystick.getPOV()
 
-        #TODO -> use or logic to also accept diagonals (eg. POVDownLeft and POVDownRight)
         if pov in (180, 135, 225):
             self.pivotDown()
         elif pov in (0, 45, 315):
