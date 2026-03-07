@@ -12,7 +12,7 @@ C_RIGHT_BACK = 52
 C_LEFT_FRONT = 55
 C_LEFT_BACK = 54
 
-SLOW_MODE_SPEED = 0.5
+SLOW_MODE_SPEED = 0.7
 CONVERSION_FACTOR_METERS = 1/22.66
 
 class Drivetrain():
@@ -94,7 +94,7 @@ class Drivetrain():
         return right - left
         
     def teleopPeriodic(self):
-        if self.joystick.getXButtonPressed():
+        if self.joystick.getAButtonPressed():
             self.toggle_slow_mode()
         
         self.Drivetrain.arcadeDrive(
