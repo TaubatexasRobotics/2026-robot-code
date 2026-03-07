@@ -6,7 +6,7 @@ from typing import Optional
 from led import LEDController
 from commands2.button import JoystickButton, POVButton
 from intake import Intake
-from wpilib import SmartDashboard, SendableChooser, DriverStation, Joystick
+from wpilib import SmartDashboard, SendableChooser, DriverStation, Joystick, Timer
 from shooter import Shooter
 from turret import Turret
 from camera import PhotonVisionCamera
@@ -15,7 +15,6 @@ from indexer import Indexer
 class Robot(TimedCommandRobot):
     autonomous: Optional[Command] = None
     autoChooser: SendableChooser = SendableChooser()
-    
     drivetrain: Drivetrain = Drivetrain()
     intake: Intake = Intake()
     driverJoystick: Joystick = Joystick(constants.kJoystickDriverPort)
@@ -24,6 +23,7 @@ class Robot(TimedCommandRobot):
     turret: Turret = Turret()
     indexer: Indexer = Indexer()
     led: LEDController = LEDController()
+    timer: Timer = Timer()
     turretCamera: PhotonVisionCamera = PhotonVisionCamera(constants.kCameraName)
 
     def combineAxis(self, joystick: Joystick, left_axis, right_axis) -> float:
@@ -75,6 +75,16 @@ class Robot(TimedCommandRobot):
             self.turret.followYawTag(self.turretCamera, self.led)
         )
 
+        POVButton(self.copilotJoystick, 180).toggleOnTrue(
+            self.shooter.activateFlywheel100()
+        )
+        POVButton(self.copilotJoystick, 270).toggleOnTrue(
+            self.shooter.activateFlywheel75()
+        )
+        POVButton(self.copilotJoystick, 0).toggleOnTrue(
+            self.shooter.activateFlywheel50()
+        )
+
         POVButton(self.copilotJoystick, 90).toggleOnTrue(
             self.shooter.hoodUp()
         )
@@ -88,6 +98,9 @@ class Robot(TimedCommandRobot):
         self.led.blinkGreen().schedule()
 
     def autonomousInit(self) -> None:
+        self.timer.reset()
+        self.timer.start()
+    
         DriverStation.silenceJoystickConnectionWarning(True)
         self.autonomous = self.autoChooser.getSelected()
 
@@ -95,6 +108,8 @@ class Robot(TimedCommandRobot):
             self.autonomous.schedule()
 
     def autonomousPeriodic(self) -> None:
+        # timer = self.timer.get()
+
         pass
 
     def autonomousExit(self) -> None:

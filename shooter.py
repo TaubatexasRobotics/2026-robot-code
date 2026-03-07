@@ -10,6 +10,7 @@ from commands2 import Subsystem, Command
 from camera import AprilTagCamera
 from wpimath.controller import PIDController, ArmFeedforward
 import constants
+from wpilib import SmartDashboard, SendableChooser
 
 class Shooter(Subsystem):
     def __init__(self) -> None:
@@ -23,6 +24,7 @@ class Shooter(Subsystem):
         self.hood_pid = PIDController(0.006, 0.0, 0.0)
         self.hood_pid.setTolerance(0.1)
         self.hood_encoder.setPosition(0)
+
 
         config = SparkMaxConfig()
 
@@ -40,7 +42,17 @@ class Shooter(Subsystem):
         self.armFeedForward = ArmFeedforward(1.2,1,1)
 
     def activateFlywheel(self) -> Command:
-        return self.run(lambda: self.flywheel.set(0.45))
+        return self.run(lambda: self.flywheel.set(0.3))
+    
+    def activateFlywheel100(self) -> Command:
+        return self.run(lambda: self.flywheel.set(0.75))
+    
+    def activateFlywheel75(self) -> Command:
+        return self.run(lambda: self.flywheel.set(0.6))
+    
+    def activateFlywheel50(self) -> Command:
+        return self.run(lambda: self.flywheel.set(0.50))
+    
     
     def deactivateFlywheel(self) -> Command:
         return self.run(lambda: self.flywheel.set(0))
@@ -53,7 +65,7 @@ class Shooter(Subsystem):
         return self.run(lambda: self.hood.set(0.1))
 
     def hoodUp(self) -> Command:
-        return self.run(lambda: self.hood.set(-0.1))
+        return self.run(lambda: self.hood.set(-0.5))
     
     def hoopUp_025(self) -> Command:
         return self.run(lambda: self.hood.getClosedLoopController().setSetpoint(0.25))
@@ -65,3 +77,4 @@ class Shooter(Subsystem):
     
     def hoodUpFF(self) -> Command:
         return self.run(lambda: self.hood.set(-0.8 + (-self.armFeedForward.calculate(0,self.hood.getEncoder().getVelocity()/12))))
+    

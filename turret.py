@@ -1,8 +1,8 @@
 from rev import SparkMax, SparkLowLevel
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
-from commands2 import Subsystem, Command, ParallelCommandGroup
+from commands2 import Subsystem, Command
 from utils import Utils
-from camera import AprilTagCamera, PhotonVisionCamera
+from camera import PhotonVisionCamera
 from led import LEDController
 from typing import Callable
 import constants
@@ -25,15 +25,15 @@ class Turret(Subsystem):
 
     def followYawTag(self, camera: PhotonVisionCamera, led: LEDController) -> Command:
         yaw = camera.getYawFromBestTarget()
-        print(yaw)
         rotation = 0
+        
         if yaw != 0:
-            rotation = self.pid.calculate(yaw, 0)
+            rotation = self.pid.calculate(yaw,0)
             led.blinkGreen().schedule()
+            return self.run(lambda: self.yaw.set(rotation))
         else:
             led.red().schedule()
-        
-        return self.run(lambda: self.yaw.set(rotation))
+            return 0
 
     def stopYaw(self) -> Command:
         return self.run(lambda: self.yaw.set(0))
@@ -52,6 +52,9 @@ class Turret(Subsystem):
         output = self.clamp(output, -1,1)
 
         self.yaw.setVoltage(output * 12)
+    
+    def centerTurretCommand(self, camera: PhotonVisionCamera) -> Command:
+        return self.run(lambda: self.centerTurret(camera.getYawFromBestTarget()))
 
     def commandCenterTurret(self,alignment) -> Command:
         return self.run(lambda: self.centerTurret(alignment))
