@@ -4,7 +4,7 @@ from autonomous.drivestraightpath import DriveStraightPath
 from commands2 import TimedCommandRobot, CommandScheduler, Command, ParallelCommandGroup, SequentialCommandGroup
 from typing import Optional
 from led import LEDController
-from commands2.button import JoystickButton, POVButton
+from commands2.button import JoystickButton, POVButton, Trigger
 from intake import Intake
 from wpilib import SmartDashboard, SendableChooser, DriverStation, Joystick
 from shooter import Shooter
@@ -20,7 +20,7 @@ class Robot(TimedCommandRobot):
     drivetrain: Drivetrain = Drivetrain()
     intake: Intake = Intake()
     driverJoystick: Joystick = Joystick(constants.kJoystickDriverPort)
-    copilotJoystick : Joystick = Joystick(constants.kJoystickCoDriverPort)
+    copilotJoystick: Joystick = Joystick(constants.kJoystickCoDriverPort)
     shooter: Shooter = Shooter()
     turret: Turret = Turret()
     indexer: Indexer = Indexer()
@@ -64,16 +64,12 @@ class Robot(TimedCommandRobot):
             )
         )
 
-        self.indexer.setDefaultCommand(
-            self.indexer.feedAxis(lambda: self.copilotJoystick.getRawAxis(3))
-        )
-        self.indexer.setDefaultCommand(
-            self.indexer.expulseAxis(lambda: self.copilotJoystick.getRawAxis(2))
-        )
-        
         self.turret.setDefaultCommand(
             self.turret.activateYaw(lambda: self.copilotJoystick.getRawAxis(0))
-        )  
+        )
+
+        Trigger(lambda: self.copilotJoystick.getRawAxis(3) > 0.5).whileTrue(self.indexer.feed())
+        Trigger(lambda: self.copilotJoystick.getRawAxis(4) > 0.5).whileTrue(self.indexer.expulse())
 
         #JoystickButton(self.copilotJoystick, 1).whileTrue(
         #    self.turret.followYawTag(self.turretCamera, self.led)
