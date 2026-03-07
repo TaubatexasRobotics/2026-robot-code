@@ -42,16 +42,16 @@ class Shooter(Subsystem):
         self.armFeedForward = ArmFeedforward(1.2,1,1)
 
     def activateFlywheel(self) -> Command:
-        return self.run(lambda: self.flywheel.set(0.3))
+        return self.run(lambda: self.flywheel.set(0.4))
     
     def activateFlywheel100(self) -> Command:
-        return self.run(lambda: self.flywheel.set(0.6))
+        return self.run(lambda: self.flywheel.set(0.7))
     
     def activateFlywheel75(self) -> Command:
-        return self.run(lambda: self.flywheel.set(0.5))
+        return self.run(lambda: self.flywheel.set(0.6))
     
     def activateFlywheel50(self) -> Command:
-        return self.run(lambda: self.flywheel.set(0.4))
+        return self.run(lambda: self.flywheel.set(0.5))
     
     
     def deactivateFlywheel(self) -> Command:

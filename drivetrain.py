@@ -155,6 +155,10 @@ class Drivetrain(Subsystem):
             pose,
         )
 
+    def reset_encoders(self):
+        self.left_encoder.setPosition(0)
+        self.right_encoder.setPosition(0)
+
     def getPose(self) -> Pose2d:
         return self.odometry.getPose()
 

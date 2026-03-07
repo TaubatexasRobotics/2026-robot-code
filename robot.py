@@ -11,6 +11,7 @@ from shooter import Shooter
 from turret import Turret
 from camera import PhotonVisionCamera
 from indexer import Indexer
+from wpilib import SmartDashboard
 
 class Robot(TimedCommandRobot):
     autonomous: Optional[Command] = None
@@ -61,7 +62,7 @@ class Robot(TimedCommandRobot):
                 self.shooter.activateFlywheel(),
                 self.led.blue()
             )
-        )
+        )   
 
         self.indexer.setDefaultCommand(
              self.indexer.feedAxis(lambda: self.combineAxis(self.copilotJoystick, 2, 3))
@@ -96,8 +97,15 @@ class Robot(TimedCommandRobot):
 
     def teleopExit(self) -> None:
         self.led.blinkGreen().schedule()
+    
+    def robotPeriodic(self):
+        SmartDashboard.putNumber("Shooter velocity", self.shooter.flywheel.getEncoder().getVelocity())
+        SmartDashboard.putNumber("Shooter power", self.shooter.flywheel.get())
+        SmartDashboard.putNumber("Drivetrain/Left encoder", self.drivetrain.left_encoder.getPosition())
+        SmartDashboard.putNumber("Drivetrain/Right encoder", self.drivetrain.right_encoder.getPosition())
 
     def autonomousInit(self) -> None:
+        self.drivetrain.reset_encoders()
         self.timer.reset()
         self.timer.start()
     

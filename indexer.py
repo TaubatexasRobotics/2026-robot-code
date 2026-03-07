@@ -13,11 +13,11 @@ class Indexer(Subsystem):
         self.back_roller.set(ControlMode.PercentOutput, back_perc)
     
     def feedAxis(self, axis: Callable[[], float]) -> Command:
-        return self.run(lambda: self.feed(axis() * -0.1, axis() * -0.8))
+        return self.run(lambda: self.feed(axis() * -0.35, axis() * -0.8))
 
     def feedAxisInverted(self, axis: Callable[[], float]) -> Command:
-        return self.run(lambda: self.feed(axis() * 0.1, axis() * -0.8))
+        return self.run(lambda: self.feed(axis() * 0.35, axis() * -0.8))
 
     def activateFeed(self) -> Command:
-        return self.run(lambda: self.feed(-0.1, -0.8))
+        return self.run(lambda: self.feed(-0.35, -0.8))
     
