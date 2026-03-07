@@ -41,6 +41,9 @@ class Shooter(Subsystem):
         self.setDefaultCommand(self.run(lambda: self.deactivate()))
         self.armFeedForward = ArmFeedforward(1.2,1,1)
 
+    def setFlywheel(self, speed):
+        self.flywheel.set(speed)
+
     def activateFlywheel(self) -> Command:
         return self.run(lambda: self.flywheel.set(0.4))
     

@@ -1,6 +1,7 @@
+import time
 import constants
 from drivetrain import Drivetrain
-from autonomous.drivestraightpath import DriveStraightPath
+# from autonomous.drivestraightpath import DriveStraightPath
 from commands2 import TimedCommandRobot, CommandScheduler, Command, ParallelCommandGroup, SequentialCommandGroup
 from typing import Optional
 from led import LEDController
@@ -26,6 +27,7 @@ class Robot(TimedCommandRobot):
     led: LEDController = LEDController()
     timer: Timer = Timer()
     turretCamera: PhotonVisionCamera = PhotonVisionCamera(constants.kCameraName)
+    
 
     def combineAxis(self, joystick: Joystick, left_axis, right_axis) -> float:
         leftTrigger = -joystick.getRawAxis(left_axis)
@@ -34,6 +36,14 @@ class Robot(TimedCommandRobot):
         return rightTrigger + leftTrigger
 
     def robotInit(self) -> None:
+        self.autoChooser = SendableChooser()
+
+        self.autoChooser.addOption("Esquerda", "left")
+        self.autoChooser.setDefaultOption("Centro", "center")
+        self.autoChooser.addOption("Direita", "right")
+        self.autoChooser.addOption("Desabilitado", "disabled")
+
+        SmartDashboard.putData("Auto Position", self.autoChooser)
         self.led.rainbow().schedule()
 
         #Driver Joystick
@@ -91,10 +101,10 @@ class Robot(TimedCommandRobot):
             self.shooter.hoodUp()
         )
 
-        self.autoChooser.addOption(
-            "Drive Straight Path", DriveStraightPath(self.drivetrain, 5)
-        )
-        SmartDashboard.putData("Auto Chooser", self.autoChooser)
+        # self.autoChooser.addOption(
+        #     "Drive Straight Path", DriveStraightPath(self.drivetrain, 5)
+        # )
+        # SmartDashboard.putData("Auto Chooser", self.autoChooser)
 
     def teleopExit(self) -> None:
         self.led.blinkGreen().schedule()
@@ -117,13 +127,35 @@ class Robot(TimedCommandRobot):
             self.autonomous.schedule()
 
     def autonomousPeriodic(self) -> None:
-        timer = self.timer.get()
-        if timer < 2:
-            self.drivetrain.arcadeDriveAuto(-0.4,0)
-        elif timer > 2 and timer < 5:
-            self.shooter.activate()
-        else:
-            self.shooter.deactivate()
+        try:
+            if self.autoSelected == "disabled":
+                return
+
+            if self.autoSelected == "center":
+                self.drive.arcadeDrive(0.5, 0)
+
+                timer = self.timer.get()
+                if timer < 2:
+                    self.drivetrain.arcadeDriveAuto(-0.4,0)
+                    self.shooter.activate()
+                elif 2 < timer < 10:
+                    self.drivetrain.arcadeDriveAuto(0,0)
+                    self.indexer.feed(-0.35, -0.8)
+                else:
+                    self.shooter.deactivate()
+                    self.indexer.feed(0,0)
+                    self.drivetrain.arcadeDriveAuto(0,0)
+
+            elif self.autoSelected == "left" or self.autoSelected == "right":
+                if timer < 2:
+                    self.shooter.setFlywheel(0.60)
+                elif 2 < timer < 10:
+                    self.indexer.activateFeed()
+                else:
+                    self.shooter.setFlywheel(0)
+                    self.indexer.feed(0,0)
+        except BaseException as e:
+            print(f"Error in autonomousPeriodic: {e}")
 
     def autonomousExit(self) -> None:
         CommandScheduler.getInstance().cancelAll()
