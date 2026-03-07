@@ -68,7 +68,7 @@ class Robot(TimedCommandRobot):
         )
 
         Trigger(lambda: self.copilotJoystick.getRawAxis(3) > 0.5).whileTrue(self.indexer.activateFeed())
-        Trigger(lambda: self.copilotJoystick.getRawAxis(4) > 0.5).whileTrue(self.indexer.activateInvertedFeed())
+        Trigger(lambda: self.copilotJoystick.getRawAxis(2) > 0.5).whileTrue(self.indexer.activateInvertedFeed())
 
         JoystickButton(self.copilotJoystick, 1).whileTrue(
             self.turret.followYawTag(self.turretCamera, self.led)
