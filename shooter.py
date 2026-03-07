@@ -45,13 +45,13 @@ class Shooter(Subsystem):
         return self.run(lambda: self.flywheel.set(0.3))
     
     def activateFlywheel100(self) -> Command:
-        return self.run(lambda: self.flywheel.set(0.75))
-    
-    def activateFlywheel75(self) -> Command:
         return self.run(lambda: self.flywheel.set(0.6))
     
+    def activateFlywheel75(self) -> Command:
+        return self.run(lambda: self.flywheel.set(0.5))
+    
     def activateFlywheel50(self) -> Command:
-        return self.run(lambda: self.flywheel.set(0.50))
+        return self.run(lambda: self.flywheel.set(0.4))
     
     
     def deactivateFlywheel(self) -> Command:
