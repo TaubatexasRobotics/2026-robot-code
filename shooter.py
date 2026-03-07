@@ -60,6 +60,10 @@ class Shooter(Subsystem):
     def deactivate(self) -> None:
         self.flywheel.set(0)
         self.hood.set(0)
+
+    def activate(self):
+        self.flywheel.set(0.5)
+        self.hood.set(0.5)
     
     def hoodDown(self) -> Command:
         return self.run(lambda: self.hood.set(0.1))

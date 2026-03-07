@@ -155,7 +155,7 @@ class Drivetrain(Subsystem):
             pose,
         )
 
-    def reset_encoders(self):
+    def resetEncoders(self):
         self.left_encoder.setPosition(0)
         self.right_encoder.setPosition(0)
 
@@ -209,6 +209,9 @@ class Drivetrain(Subsystem):
 
     def backward(self) -> Command:
         return self.run(lambda: self.drivetrain.arcadeDrive(-1, 0))
+    
+    def arcadeDriveAuto(self, speed, rotate):
+        self.drivetrain.arcadeDrive(speed,rotate)
 
     def arcadeDrive(
         self, speed: Callable[[], float], rotate: Callable[[], float]
@@ -236,6 +239,7 @@ class Drivetrain(Subsystem):
         self, left_speed: Callable[[], float], right_speed: Callable[[], float]
     ) -> Command:
         return self.run(lambda: self.drivetrain.tankDrive(left_speed(), right_speed()))
+        
 
     def sysIdDriveVoltage(self, voltage: volts) -> None:
         angularMode: bool = SmartDashboard.getBoolean("Angular Mode", False)

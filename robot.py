@@ -71,10 +71,11 @@ class Robot(TimedCommandRobot):
         self.turret.setDefaultCommand(
             self.turret.activateYaw(lambda: self.copilotJoystick.getRawAxis(0))
         )  
-
-        JoystickButton(self.copilotJoystick, 1).whileTrue(
-            self.turret.followYawTag(self.turretCamera, self.led)
-        )
+          
+        # JoystickButton(self.copilotJoystick, 1).whileTrue(
+            #     self.turret.followYawTag(self.turretCamera, self.led)
+            # )
+    
 
         POVButton(self.copilotJoystick, 180).toggleOnTrue(
             self.shooter.activateFlywheel100()
@@ -105,7 +106,7 @@ class Robot(TimedCommandRobot):
         SmartDashboard.putNumber("Drivetrain/Right encoder", self.drivetrain.right_encoder.getPosition())
 
     def autonomousInit(self) -> None:
-        self.drivetrain.reset_encoders()
+        self.drivetrain.resetEncoders()
         self.timer.reset()
         self.timer.start()
     
@@ -116,9 +117,13 @@ class Robot(TimedCommandRobot):
             self.autonomous.schedule()
 
     def autonomousPeriodic(self) -> None:
-        # timer = self.timer.get()
-
-        pass
+        timer = self.timer.get()
+        if timer < 2:
+            self.drivetrain.arcadeDriveAuto(-0.4,0)
+        elif timer > 2 and timer < 5:
+            self.shooter.activate()
+        else:
+            self.shooter.deactivate()
 
     def autonomousExit(self) -> None:
         CommandScheduler.getInstance().cancelAll()
