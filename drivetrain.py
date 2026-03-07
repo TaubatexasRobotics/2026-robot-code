@@ -211,9 +211,9 @@ class Drivetrain(Subsystem):
         return self.run(lambda: self.drivetrain.arcadeDrive(-1, 0))
     
     def arcadeDriveAuto(self, speed, rotate):
-        self.drivetrain.arcadeDrive(speed,rotate)
+        self.drivetrain.arcadeDrive(speed, rotate)
 
-    def arcadeDrive(
+    def arcadeDriveCommand(
         self, speed: Callable[[], float], rotate: Callable[[], float]
     ) -> Command:
         if self.slowMode:

@@ -60,7 +60,7 @@ class Robot(TimedCommandRobot):
         JoystickButton(self.driverJoystick, 4).whileTrue(self.intake.releaseGamePiece())
         
         self.drivetrain.setDefaultCommand(
-            self.drivetrain.arcadeDrive(
+            self.drivetrain.arcadeDriveCommand(
                 lambda: -self.combineAxis(self.driverJoystick, 2, 3),
                 lambda: self.driverJoystick.getRawAxis(0)
             )
@@ -119,12 +119,13 @@ class Robot(TimedCommandRobot):
         self.drivetrain.resetEncoders()
         self.timer.reset()
         self.timer.start()
+        self.autoSelected = self.autoChooser.getSelected()
     
         DriverStation.silenceJoystickConnectionWarning(True)
-        self.autonomous = self.autoChooser.getSelected()
+        # self.autonomous = self.autoChooser.getSelected()
 
-        if self.autonomous:
-            self.autonomous.schedule()
+        # if self.autonomous:
+        #     self.autonomous.schedule()
 
     def autonomousPeriodic(self) -> None:
         try:
@@ -132,19 +133,20 @@ class Robot(TimedCommandRobot):
                 return
 
             if self.autoSelected == "center":
-                self.drive.arcadeDrive(0.5, 0)
+                self.drivetrain.arcadeDriveCommand(0.5, 0)
 
                 timer = self.timer.get()
                 if timer < 2:
-                    self.drivetrain.arcadeDriveAuto(-0.4,0)
+                    self.drivetrain.drivetrain.arcadeDrive(-0.4,0)
                     self.shooter.activate()
-                elif 2 < timer < 10:
-                    self.drivetrain.arcadeDriveAuto(0,0)
+                elif timer < 10:
+                    self.drivetrain.drivetrain.arcadeDrive(0,0)
                     self.indexer.feed(-0.35, -0.8)
+                    self.shooter.activate()
                 else:
                     self.shooter.deactivate()
                     self.indexer.feed(0,0)
-                    self.drivetrain.arcadeDriveAuto(0,0)
+                    self.drivetrain.drivetrain.arcadeDrive(0,0)
 
             elif self.autoSelected == "left" or self.autoSelected == "right":
                 if timer < 2:
