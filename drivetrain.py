@@ -81,7 +81,11 @@ class Drivetrain():
         self.update_odometry()
         # self.field.setRobotPose(self.get_pose())
         SmartDashboard.putData("Field", self.field)
-        SmartDashboard.putBoolean("Slow mode", self.slow_mode)
+        SmartDashboard.putBoolean("Drivetrain/Slow mode", self.slow_mode)
+        SmartDashboard.putNumber("Drivetrain/Left encoder (m)", self.get_distance_meters()[0])
+        SmartDashboard.putNumber("Drivetrain/Right encoder (m)", self.get_distance_meters()[1])
+        SmartDashboard.putNumber("Drivetrain/Left motor", self.left_motors.get())
+        SmartDashboard.putNumber("Drivetrain/Right motor", self.right_motors.get())
         
     def triggers_to_axis(self):
         left = self.joystick.getLeftTriggerAxis()
@@ -95,6 +99,6 @@ class Drivetrain():
         
         self.Drivetrain.arcadeDrive(
             self.triggers_to_axis() * self.speed_factor,
-            self.joystick.getRawAxis(1) * self.speed_factor
+            self.joystick.getRawAxis(0) * self.speed_factor
         )
 
