@@ -1,8 +1,6 @@
 from wpilib import Joystick
 from commands2 import TimedCommandRobot, Command
 from RampJoystick import RampJoystick
-from phoenix5 import WPI_VictorSPX
-from wpilib.drive import DifferentialDrive
 from drivetrain import Drivetrain
 import constants
 

@@ -1,10 +1,11 @@
-from commands2 import Subsystem, Command, sequentialcommandgroup
+from commands2 import Subsystem, Command, sequentialcommandgroup, PIDCommand
 from phoenix5 import WPI_VictorSPX
-from navx import Navx
+from navx import AHRS
 from typing import Callable
 import constants
 from wpilib.drive import DifferentialDrive
 from wpilib import MotorControllerGroup, Field2d, SmartDashboard
+from wpimath.controller import PIDController
 
 class Drivetrain(Subsystem):
 
@@ -22,6 +23,9 @@ class Drivetrain(Subsystem):
         
         self.drivetrain = DifferentialDrive(self.left_motors, self.right_motors)
 
+        # Navx
+        self.navx = AHRS.create_spi()
+
         # Configs
         self.drivetrain.setSafetyEnabled(True)
         self.drivetrain.setExpiration(0.1)
@@ -30,6 +34,7 @@ class Drivetrain(Subsystem):
         self.field = Field2d()
         self.slowMode = False
 
+    def periodic(self):
         # SmartDashboard
         SmartDashboard.putNumber("Drivetrain/Left Front Motor", self.left_front_motor.get())
         SmartDashboard.putNumber("Drivetrain/Left Back Motor", self.left_back_motor.get())
@@ -50,12 +55,17 @@ class Drivetrain(Subsystem):
     def tankDrive(self, left_speed: Callable[[], float], right_speed: Callable[[], float]) -> Command:
         return self.run(lambda: self.drivetrain.tankDrive(left_speed(), right_speed()))
     
+    def rotate(self, angle: float) -> Command:
+        return PIDCommand(
+            PIDController(*constants.Kdrivetrain_PID[:3]),
+            lambda: self.navx.getAngle(),
+            angle,
+            lambda output: self.drivetrain.arcadeDrive(0, output),
+            self,
+        )
+
     def front(self) -> Command:
         return self.run(lambda: self.drivetrain.arcadeDrive(0.9, 0))
     
     def back(self) -> Command:
         return self.run(lambda: self.drivetrain.arcadeDrive(-0.9, 0))
-    
-
-
-
