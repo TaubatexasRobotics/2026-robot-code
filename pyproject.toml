@@ -22,5 +22,8 @@ components = [
 
 # Other pip packages to install, such as vendor packages (each element
 # is equivalent to a line in requirements.txt)
-requires = ["robotpy-ctre",
-"robotpy-rev"]
+requires = [
+    "robotpy-ctre",
+    "robotpy-rev",
+    "robotpy-navx"
+]

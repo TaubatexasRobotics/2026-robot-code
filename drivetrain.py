@@ -30,9 +30,6 @@ class Drivetrain(Subsystem):
         self.field = Field2d()
         self.slowMode = False
 
-        # Navx definition
-        # self.navx = Navx()
-
         # SmartDashboard
         SmartDashboard.putNumber("Drivetrain/Left Front Motor", self.left_front_motor.get())
         SmartDashboard.putNumber("Drivetrain/Left Back Motor", self.left_back_motor.get())
@@ -42,24 +39,15 @@ class Drivetrain(Subsystem):
     def setSlowMode(self) -> Command:
         return self.run(lambda: setattr(self, "slowMode", not self.slowMode))
 
-    def arcadeDriveCommand(
-        self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
+    def arcadeDriveCommand(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
         if self.slowMode:
-            return self.run(
-                lambda: self.drivetrain.arcadeDrive(speed() * 0.5, rotate() * 0.5))
+            return self.run(lambda: self.drivetrain.arcadeDrive(speed() * 0.5, rotate() * 0.5))
         return self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate()))
     
-    def cheesyDrive(
-        self,
-        speed: Callable[[], float],
-        rotate: Callable[[], float], allowTurnInPlace: bool,) -> Command:
-        return self.run(
-            lambda: self.drivetrain.curvatureDrive(speed(), rotate(), allowTurnInPlace)
-        )
+    def cheesyDrive(self,speed: Callable[[], float],rotate: Callable[[], float], allowTurnInPlace: bool,) -> Command:
+        return self.run(lambda: self.drivetrain.curvatureDrive(speed(), rotate(), allowTurnInPlace))
 
-    def tankDrive(
-        self, left_speed: Callable[[], float], right_speed: Callable[[], float]
-    ) -> Command:
+    def tankDrive(self, left_speed: Callable[[], float], right_speed: Callable[[], float]) -> Command:
         return self.run(lambda: self.drivetrain.tankDrive(left_speed(), right_speed()))
     
     def front(self) -> Command:
