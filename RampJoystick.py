@@ -1,5 +1,4 @@
 from wpilib import Joystick
-
 from wpimath.trajectory import TrapezoidProfile
 
 class RampJoystick(Joystick):
