@@ -1,8 +1,6 @@
 from wpilib import Joystick
 from commands2 import TimedCommandRobot, CommandScheduler, Command, ParallelCommandGroup, SequentialCommandGroup
 from RampJoystick import RampJoystick
-from phoenix5 import WPI_VictorSPX
-from wpilib.drive import DifferentialDrive
 from drivetrain import Drivetrain
 import constants
 from commands2.button import JoystickButton, POVButton
@@ -15,6 +13,11 @@ class MyRobot(TimedCommandRobot):
     def combineAxis(self, joystick: RampJoystick, left_axis, right_axis) -> float:
         leftTrigger = -joystick.getRawAxis(left_axis)
         rightTrigger = joystick.getRawAxis(right_axis)
+        return rightTrigger + leftTrigger
+    
+    def combineRampAxis(self, joystick: RampJoystick, left_axis, right_axis) -> float:
+        leftTrigger = -joystick.getRampAxis(left_axis)
+        rightTrigger = joystick.getRampAxis(right_axis)
         return rightTrigger + leftTrigger
     
     def robotInit(self) -> None:
@@ -86,7 +89,7 @@ class MyRobot(TimedCommandRobot):
         
         self.drivetrain.setDefaultCommand(
             self.drivetrain.arcadeDriveCommand(
-                lambda: -self.combineAxis(self.driver_joystick, 2, 3),
+                lambda: -self.combineRampAxis(self.driver_joystick, 2, 3),
                 lambda: self.driver_joystick.getRawAxis(0)
             ) 
         )
