@@ -33,6 +33,7 @@ class Drivetrain(Subsystem):
 
         self.field = Field2d()
         self.slowMode = False
+        
 
     def periodic(self):
         # SmartDashboard
@@ -47,7 +48,7 @@ class Drivetrain(Subsystem):
     def arcadeDriveCommand(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
         if self.slowMode:
             return self.run(lambda: self.drivetrain.arcadeDrive(speed() * 0.5, rotate() * 0.5))
-        return self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate()))
+        return self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate(), False))
     
     def cheesyDrive(self,speed: Callable[[], float],rotate: Callable[[], float], allowTurnInPlace: bool,) -> Command:
         return self.run(lambda: self.drivetrain.curvatureDrive(speed(), rotate(), allowTurnInPlace))
@@ -60,12 +61,12 @@ class Drivetrain(Subsystem):
             PIDController(*constants.Kdrivetrain_PID[:3]),
             lambda: self.navx.getAngle(),
             angle,
-            lambda output: self.drivetrain.arcadeDrive(0, output),
+            lambda output: self.drivetrain.arcadeDrive(0, output, False),
             self,
         )
 
     def front(self) -> Command:
-        return self.run(lambda: self.drivetrain.arcadeDrive(0.9, 0))
+        return self.run(lambda: self.drivetrain.arcadeDrive(0.9, 0, False))
     
     def back(self) -> Command:
-        return self.run(lambda: self.drivetrain.arcadeDrive(-0.9, 0))
+        return self.run(lambda: self.drivetrain.arcadeDrive(-0.9, 0, False))

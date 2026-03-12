@@ -10,16 +10,24 @@ class MyRobot(TimedCommandRobot):
         rightTrigger = joystick.getRawAxis(right_axis)
         return rightTrigger + leftTrigger
     
+    def combineRampAxis(self, joystick: RampJoystick, left_axis, right_axis) -> float:
+        leftTrigger = -joystick.getRampAxis(left_axis)
+        rightTrigger = joystick.getRampAxis(right_axis)
+        return rightTrigger + leftTrigger
+    
     def robotInit(self) -> None:
         self.driver_joystick = RampJoystick(constants.Kdriver_joystick,0.5,0.7,0.8,0.2)
         self.codriver_joystick = RampJoystick(constants.Kcodriver_joystick,0.5,0.7,0.8,0.2)
         self.drivetrain = Drivetrain()
+
+        # Buttons
+
         
     def teleopInit(self) -> None:
         
         self.drivetrain.setDefaultCommand(
             self.drivetrain.arcadeDriveCommand(
-                lambda: -self.combineAxis(self.driver_joystick, 2, 3),
+                lambda: -self.combineRampAxis(self.driver_joystick, 2, 3),
                 lambda: self.driver_joystick.getRawAxis(0)
             ) 
         )
