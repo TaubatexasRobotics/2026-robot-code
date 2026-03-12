@@ -74,6 +74,13 @@ class Intake(Subsystem):
     #     self.lastBurstTime = Timer.getFPGATimestamp()
     '''
 
+    def getAboveCurrent(self, current):
+        return self.pivot.getOutputCurrent() > current
+        
+    def downPivotByCurrent(self) -> Command:
+        return self.run(lambda: self.pivot.set(0.8)).until(self.getAboveCurrent(20))
+    
+
     def UpByEncoder(self) -> Command:
         output = constants.Kintake_PID.calculate(self.pivot_encoder.getPosition() * 360, 20)
         return self.run(lambda: self.pivot.set(output))
@@ -90,7 +97,7 @@ class Intake(Subsystem):
 
     def down(self) -> Command:
         return self.run(lambda: self.startPivotDown())
-
+    
     def releaseGamePiece(self) -> Command:
         return self.run(lambda: self.roller.set(ControlMode.PercentOutput, -1))
 
