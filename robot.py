@@ -32,23 +32,23 @@ class MyRobot(TimedCommandRobot):
         # Drivetrain        
         self.drivetrain.setDefaultCommand(
             self.drivetrain.arcadeDriveCommand(
-                lambda: -self.combineAxis(self.driver_joystick, 2, 3),
-                lambda: self.driver_joystick.getRawAxis(0)
+                lambda: -self.combineRampAxis(self.driver_joystick, 2, 3),
+                lambda: self.driver_joystick.getRampAxis(0)
             )
         )
 
         # Copilot joystick buttons
         # Intake Pivot 
-        self.copilot_joystick.povUp().whileTrue(self.intake.up())
-        self.copilot_joystick.povUpRight().whileTrue(self.intake.up())
-        self.copilot_joystick.povUpLeft().whileTrue(self.intake.up())
+        self.copilot_joystick.povUp().whileTrue(self.intake.upPivotByCurrent())
+        self.copilot_joystick.povUpRight().whileTrue(self.intake.upPivotByCurrent())
+        self.copilot_joystick.povUpLeft().whileTrue(self.intake.upPivotByCurrent())
         
-        self.copilot_joystick.povDown().whileTrue(self.intake.down())
-        self.copilot_joystick.povDownRight().whileTrue(self.intake.down())
-        self.copilot_joystick.povDownLeft().whileTrue(self.intake.down())
+        self.copilot_joystick.povDown().whileTrue(self.intake.downPivotByCurrent())
+        self.copilot_joystick.povDownRight().whileTrue(self.intake.downPivotByCurrent())
+        self.copilot_joystick.povDownLeft().whileTrue(self.intake.downPivotByCurrent())
 
         # POVButton(self.codriver_joystick, 0).whileTrue(
-        #     self.intake.up()
+        #     self.intake.upPivotByCurrent()
         # )
         # POVButton(self.codriver_joystick, 180).whileTrue(
         #     self.intake.down()

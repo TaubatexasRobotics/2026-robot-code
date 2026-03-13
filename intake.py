@@ -77,6 +77,9 @@ class Intake(Subsystem):
         return self.pivot.getOutputCurrent() > current
         
     def downPivotByCurrent(self) -> Command:
+        return self.run(lambda: self.pivot.set(-0.8)).until(lambda: self.getAboveCurrent(20))
+        
+    def upPivotByCurrent(self) -> Command:
         return self.run(lambda: self.pivot.set(0.8)).until(lambda: self.getAboveCurrent(20))
     
     def UpByEncoder(self) -> Command:
