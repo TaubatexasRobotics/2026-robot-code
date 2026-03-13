@@ -26,7 +26,9 @@ class MyRobot(TimedCommandRobot):
         self.intake = Intake()
         self.gate = Gate()
         
-        # Driver joystick buttons        
+        # Driver joystick buttons
+        
+        # Drivetrain        
         self.drivetrain.setDefaultCommand(
             self.drivetrain.arcadeDriveCommand(
                 lambda: -self.combineAxis(self.driver_joystick, 2, 3),
@@ -35,6 +37,8 @@ class MyRobot(TimedCommandRobot):
         )
 
         # Copilot joystick buttons
+        
+        # Intake Pivot 
         POVButton(self.codriver_joystick, 0).whileTrue(
             self.intake.up()
         )
@@ -42,6 +46,11 @@ class MyRobot(TimedCommandRobot):
             self.intake.down()
         )
 
+        # Intake Roller
+        self.codriver_xbox_controller.rightTrigger().whileTrue(self.intake.colectGamePiece())
+        self.codriver_xbox_controller.leftTrigger().whileTrue(self.intake.releaseGamePiece())
+
+        # Gate
         self.codriver_xbox_controller.rightBumper().whileTrue(self.gate.openGate())
         self.codriver_xbox_controller.leftBumper().whileTrue(self.gate.closeGate())
 

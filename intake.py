@@ -29,12 +29,8 @@ class Intake(Subsystem):
         #TODO: virtual endstop
         # self.pivot.getOutputCurrent()
 
-    # def get_velocity(self):
-    #     distance = self.roller.get_position
-    #     time =
-
-    # def isPivotUp(self) -> bool:
-    #     return self.pivotUp
+    def isPivotUp(self) -> bool:
+        return self.pivotUp
 
     def periodic(self) -> None:
         elapsed = Timer.getFPGATimestamp() - self.lastBurstTime
@@ -104,6 +100,3 @@ class Intake(Subsystem):
 
     def colectGamePiece(self) -> Command:
         return self.run(lambda: self.roller.set(1))
-    
-    # def updown(self, up, down):
-    #     r
