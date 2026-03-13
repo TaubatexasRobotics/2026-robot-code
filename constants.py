@@ -1,6 +1,6 @@
 # Joysticks
 Kdriver_joystick = 0
-Kcodriver_joystick = 1
+Kcopilot_joystick = 1
 
 # Drivetrain
 Kleft_front_id = 4

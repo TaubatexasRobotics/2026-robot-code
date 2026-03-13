@@ -8,6 +8,10 @@ from phoenix6.hardware import TalonFX
 from phoenix6.controls import DutyCycleOut   
 from wpimath.controller import PIDController
 
+UP_PIVOT_SPEED = -0.7
+DOWN_PIVOT_SPEED = 0.5
+RELEASE_INTAKE_SPEED = -0.6
+COLLECT_INTAKE_SPEED = 0.4
 
 class Intake(Subsystem):
     def __init__(self) -> None:
@@ -40,9 +44,9 @@ class Intake(Subsystem):
         kPivotTimeDown = 0.5
 
         if self.pivotUp:
-            percent = 0.5 if elapsed < kPivotTimeUp else 0
+            percent = DOWN_PIVOT_SPEED if elapsed < kPivotTimeUp else 0
         else:
-            percent = -0.7 if elapsed < kPivotTimeDown else 0
+            percent = UP_PIVOT_SPEED if elapsed < kPivotTimeDown else 0
 
         self.pivot.set(percent)
 
@@ -93,16 +97,16 @@ class Intake(Subsystem):
         return self.run(lambda: self.startPivotDown())
     
     def releaseGamePiece(self) -> Command:
-        return self.run(lambda: self.roller.set(-0.6))
+        return self.run(lambda: self.roller.set(RELEASE_INTAKE_SPEED))
 
     def stopGamePieceCollector(self) -> Command:
-        return self.run(lambda: self.roller.set(0))
+       return self.run(lambda: self.roller.set(0))
 
     def colectGamePiece(self) -> Command:
-        return self.run(lambda: self.roller.set(0.4))
+        return self.run(lambda: self.roller.set(COLLECT_INTAKE_SPEED))
     
     def up(self) -> Command:
-        return self.run(lambda: self.pivot.set(0.7))
+        return self.run(lambda: self.pivot.set(UP_PIVOT_SPEED))
     
     def down(self) -> Command:
-        return self.run(lambda: self.pivot.set(-0.5))
+        return self.run(lambda: self.pivot.set(DOWN_PIVOT_SPEED))

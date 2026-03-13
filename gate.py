@@ -2,7 +2,7 @@ from phoenix5 import WPI_VictorSPX
 from commands2 import Subsystem, Command
 import constants
 
-OPEN_SPEED = 0.5
+OPEN_SPEED = 0.6
 CLOSE_SPEED = -0.3
 
 class Gate(Subsystem):

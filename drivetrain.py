@@ -7,6 +7,10 @@ from wpilib.drive import DifferentialDrive
 from wpilib import MotorControllerGroup, Field2d, SmartDashboard
 from wpimath.controller import PIDController
 
+FRONT_SPEED = 0.9
+BACK_SPEED = -0.9
+SLOW_MODE_SPEED = 0.5
+
 class Drivetrain(Subsystem):
 
     def __init__(self):
@@ -47,7 +51,7 @@ class Drivetrain(Subsystem):
 
     def arcadeDriveCommand(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
         if self.slowMode:
-            return self.run(lambda: self.drivetrain.arcadeDrive(speed() * 0.5, rotate() * 0.5))
+            return self.run(lambda: self.drivetrain.arcadeDrive(speed() * SLOW_MODE_SPEED, rotate() * SLOW_MODE_SPEED))
         return self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate(), False))
     
     def cheesyDrive(self,speed: Callable[[], float],rotate: Callable[[], float], allowTurnInPlace: bool,) -> Command:
@@ -66,7 +70,7 @@ class Drivetrain(Subsystem):
         )
 
     def front(self) -> Command:
-        return self.run(lambda: self.drivetrain.arcadeDrive(0.9, 0, False))
+        return self.run(lambda: self.drivetrain.arcadeDrive(FRONT_SPEED, 0, False))
     
     def back(self) -> Command:
-        return self.run(lambda: self.drivetrain.arcadeDrive(-0.9, 0, False))
+        return self.run(lambda: self.drivetrain.arcadeDrive(BACK_SPEED, 0, False))
