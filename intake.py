@@ -86,17 +86,23 @@ class Intake(Subsystem):
     def DownByEncoder(self) -> Command:
         return self.run(self.setPivotDownByEncoder)
 
-    def up(self) -> Command:
+    def upWithTime(self) -> Command:
         return self.run(lambda: self.startPivotUp())
 
-    def down(self) -> Command:
+    def downWithTime(self) -> Command:
         return self.run(lambda: self.startPivotDown())
     
     def releaseGamePiece(self) -> Command:
-        return self.run(lambda: self.roller.set(-1))
+        return self.run(lambda: self.roller.set(-0.6))
 
     def stopGamePieceCollector(self) -> Command:
         return self.run(lambda: self.roller.set(0))
 
     def colectGamePiece(self) -> Command:
-        return self.run(lambda: self.roller.set(1))
+        return self.run(lambda: self.roller.set(0.4))
+    
+    def up(self) -> Command:
+        return self.run(lambda: self.pivot.set(0.7))
+    
+    def down(self) -> Command:
+        return self.run(lambda: self.pivot.set(-0.5))

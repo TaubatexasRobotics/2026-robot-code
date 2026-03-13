@@ -45,7 +45,6 @@ class MyRobot(TimedCommandRobot):
         POVButton(self.codriver_joystick, 180).whileTrue(
             self.intake.down()
         )
-
         # Intake Roller
         self.codriver_xbox_controller.rightTrigger().whileTrue(self.intake.colectGamePiece())
         self.codriver_xbox_controller.leftTrigger().whileTrue(self.intake.releaseGamePiece())
