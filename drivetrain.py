@@ -51,7 +51,7 @@ class Drivetrain(Subsystem):
 
     def arcadeDriveCommand(self, speed: Callable[[], float], rotate: Callable[[], float]) -> Command:
         if self.slowMode:
-            return self.run(lambda: self.drivetrain.arcadeDrive(speed() * SLOW_MODE_SPEED, rotate() * SLOW_MODE_SPEED))
+            return self.run(lambda: self.drivetrain.arcadeDrive(speed() * SLOW_MODE_SPEED, rotate() * SLOW_MODE_SPEED, False))
         return self.run(lambda: self.drivetrain.arcadeDrive(speed(), rotate(), False))
     
     def cheesyDrive(self,speed: Callable[[], float],rotate: Callable[[], float], allowTurnInPlace: bool,) -> Command:
