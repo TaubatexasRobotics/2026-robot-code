@@ -18,7 +18,7 @@ class Drivetrain(Subsystem):
 
         # Motors agroup and DifferentialDrive definition
         self.left_motors = MotorControllerGroup(self.left_front_motor, self.left_back_motor) # Left
-        self.right_motors = MotorControllerGroup(self.right_front_motor, self.left_back_motor) # Right
+        self.right_motors = MotorControllerGroup(self.right_front_motor, self.right_back_motor) # Right
         self.right_motors.setInverted(True)
         
         self.drivetrain = DifferentialDrive(self.left_motors, self.right_motors)
@@ -58,7 +58,7 @@ class Drivetrain(Subsystem):
     
     def rotate(self, angle: float) -> Command:
         return PIDCommand(
-            PIDController(*constants.Kdrivetrain_PID[:3]),
+            PIDController(*constants.Kdrivetrain_PID),
             lambda: self.navx.getAngle(),
             angle,
             lambda output: self.drivetrain.arcadeDrive(0, output, False),

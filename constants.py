@@ -10,13 +10,13 @@ Kleft_back_id = 2
 Kright_front_id = 5
 Kright_back_id = 1
 
-Kdrivetrain_PID = PIDController(0.2, 0, 0)
+Kdrivetrain_PID = (0.2, 0, 0)
 
 # Intake
 Kintake_pivot_id = 52
-Kintake_roller_id = 1
+Kintake_roller_id = 20
 
-Kintake_PID = PIDController(0.2, 0, 0)
+Kpivot_PID = (0.2, 0, 0)
 
 # Generic Xbox 360 Controller
 g_xbox_360_map = {
