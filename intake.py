@@ -8,16 +8,18 @@ from phoenix6.hardware import TalonFX
 from phoenix6.controls import DutyCycleOut   
 from wpimath.controller import PIDController
 
-UP_PIVOT_SPEED = -0.7
-DOWN_PIVOT_SPEED = 0.5
-RELEASE_INTAKE_SPEED = -0.6
+UP_PIVOT_SPEED = 0.9999
+DOWN_PIVOT_SPEED = -0.75
 COLLECT_INTAKE_SPEED = 0.4
+RELEASE_INTAKE_SPEED = -0.6
 
 class Intake(Subsystem):
     def __init__(self) -> None:
         # Motors definition
         self.pivot = SparkMax(constants.Kintake_pivot_id, SparkLowLevel.MotorType.kBrushless)
         self.roller = TalonFX(constants.Kintake_roller_id)
+
+        self.pivot.setInverted(True)
         
         # Encoders definition
         self.pivot_encoder = self.pivot.getEncoder()
@@ -53,6 +55,7 @@ class Intake(Subsystem):
         # SmartDashboard
         SmartDashboard.putNumber("Intake/Pivot Position in Degrees", self.pivot_encoder.getPosition() * 360)
         SmartDashboard.putNumber("Intake/Pivot Velocity", self.pivot_encoder.getVelocity())
+        SmartDashboard.putNumber("Intake/Pivot Amps", self.pivot.getOutputCurrent())
         SmartDashboard.putNumber("Intake/Roller Position in Degrees", self.roller.get_position().value / 45.52)
         SmartDashboard.putNumber("Intake/Roller Velocity", self.roller.get_acceleration().value)
     
@@ -77,12 +80,12 @@ class Intake(Subsystem):
         return self.pivot.getOutputCurrent() > current
         
     def downPivotByCurrent(self) -> Command:
-        return self.run(lambda: self.pivot.set(-0.8)).until(lambda: self.getAboveCurrent(20))
+        return self.run(lambda: self.pivot.set(-0.8)).until(lambda: self.getAboveCurrent(40))
         
     def upPivotByCurrent(self) -> Command:
-        return self.run(lambda: self.pivot.set(0.8)).until(lambda: self.getAboveCurrent(20))
+        return self.run(lambda: self.pivot.set(0.8)).until(lambda: self.getAboveCurrent(2))
     
-    def UpByEncoder(self) -> Command:
+    def setUpByEncoder(self,) -> Command:
         output = self.pivot_PID.calculate(self.pivot_encoder.getPosition() * 360, 20)
         return self.run(lambda: self.pivot.set(output))
     
@@ -113,3 +116,5 @@ class Intake(Subsystem):
     
     def down(self) -> Command:
         return self.run(lambda: self.pivot.set(DOWN_PIVOT_SPEED))
+    
+    

@@ -1,10 +1,11 @@
-from commands2 import TimedCommandRobot, CommandScheduler, Command, ParallelCommandGroup, SequentialCommandGroup
-from RampJoystick import RampJoystick
-from drivetrain import Drivetrain
+from commands2 import TimedCommandRobot, SequentialCommandGroup, CommandScheduler
+from commands2.button import CommandXboxController
+from wpilib import SendableChooser, SmartDashboard
 import constants
-from commands2.button import JoystickButton, POVButton, CommandXboxController
+from drivetrain import Drivetrain
 from intake import Intake
 from gate import Gate
+from rampJoystick import RampJoystick
 
 class MyRobot(TimedCommandRobot):
     def combineAxis(self, joystick: RampJoystick, left_axis, right_axis) -> float:
@@ -21,12 +22,32 @@ class MyRobot(TimedCommandRobot):
         # Joysticks
         self.driver_joystick = RampJoystick(constants.Kdriver_joystick,0.5,0.8,0.8,0.2)
         self.copilot_joystick = CommandXboxController(constants.Kcopilot_joystick)
-        self.codriver_joystick = RampJoystick(constants.Kcopilot_joystick,0.5,0.8,0.8,0.2)
 
         # Subsystens
         self.drivetrain = Drivetrain()
         self.intake = Intake()
         self.gate = Gate()
+
+        #autochooser
+        self.autoChooser = SendableChooser()
+
+        self.autoChooser.addOption("sem autonomo", self.drivetrain.stop())
+
+        self.autoChooser.addOption("caminho da direita", SequentialCommandGroup(
+            self.drivetrain.front().withTimeout(2.5),
+            self.drivetrain.rotate(-90),
+            self.intake.down().withTimeout(3.75),
+            self.intake.colectGamePiece().alongWith(self.drivetrain.front()).withTimeout(3),
+        ))
+
+        self.autoChooser.addOption("caminho da esquerda", SequentialCommandGroup(
+            self.drivetrain.front().withTimeout(2.5),
+            self.drivetrain.rotate(90),
+            self.intake.down().withTimeout(3.75),
+            self.intake.colectGamePiece().alongWith(self.drivetrain.front()).withTimeout(3),
+        ))
+
+        SmartDashboard.putData("Auto Chooser", self.autoChooser)
         
         # Driver joystick buttons
         # Drivetrain        
@@ -39,13 +60,13 @@ class MyRobot(TimedCommandRobot):
 
         # Copilot joystick buttons
         # Intake Pivot 
-        self.copilot_joystick.povUp().whileTrue(self.intake.upPivotByCurrent())
-        self.copilot_joystick.povUpRight().whileTrue(self.intake.upPivotByCurrent())
-        self.copilot_joystick.povUpLeft().whileTrue(self.intake.upPivotByCurrent())
+        self.copilot_joystick.povUp().whileTrue(self.intake.up())
+        self.copilot_joystick.povUpRight().whileTrue(self.intake.up())
+        self.copilot_joystick.povUpLeft().whileTrue(self.intake.up())
         
-        self.copilot_joystick.povDown().whileTrue(self.intake.downPivotByCurrent())
-        self.copilot_joystick.povDownRight().whileTrue(self.intake.downPivotByCurrent())
-        self.copilot_joystick.povDownLeft().whileTrue(self.intake.downPivotByCurrent())
+        self.copilot_joystick.povDown().whileTrue(self.intake.down())
+        self.copilot_joystick.povDownRight().whileTrue(self.intake.down())
+        self.copilot_joystick.povDownLeft().whileTrue(self.intake.down())
 
         # POVButton(self.codriver_joystick, 0).whileTrue(
         #     self.intake.upPivotByCurrent()
@@ -63,7 +84,12 @@ class MyRobot(TimedCommandRobot):
         self.copilot_joystick.leftBumper().whileTrue(self.gate.closeGate())
 
     def autonomousInit(self) -> None:
-        pass
+        self.autonomousCommand = self.autoChooser.getSelected()
+
+        self.drivetrain.resetNavX()
+
+        if self.autonomousCommand:
+            CommandScheduler.getInstance().schedule(self.autonomousCommand)
 
     def autonomousPeriodic(self) -> None:
         pass

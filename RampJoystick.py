@@ -7,7 +7,7 @@ class RampJoystick(Joystick):
 
         self.constraints = TrapezoidProfile.Constraints(
             maxVelocity = 1.0,      
-            maxAcceleration=5.0  
+            maxAcceleration=7.0
         )
 
         self.profile = TrapezoidProfile(self.constraints)

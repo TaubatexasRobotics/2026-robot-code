@@ -2,13 +2,14 @@ from commands2 import Subsystem, Command, sequentialcommandgroup, PIDCommand
 from phoenix5 import WPI_VictorSPX
 from navx import AHRS
 from typing import Callable
+from utils import Utils
 import constants
 from wpilib.drive import DifferentialDrive
 from wpilib import MotorControllerGroup, Field2d, SmartDashboard
 from wpimath.controller import PIDController
 
-FRONT_SPEED = 0.9
-BACK_SPEED = -0.9
+FRONT_SPEED = -0.9
+BACK_SPEED = 0.9
 SLOW_MODE_SPEED = 0.5
 
 class Drivetrain(Subsystem):
@@ -23,12 +24,15 @@ class Drivetrain(Subsystem):
         # Motors agroup and DifferentialDrive definition
         self.left_motors = MotorControllerGroup(self.left_front_motor, self.left_back_motor) # Left
         self.right_motors = MotorControllerGroup(self.right_front_motor, self.right_back_motor) # Right
-        self.right_motors.setInverted(True)
-        
+        self.left_motors.setInverted(True)
         self.drivetrain = DifferentialDrive(self.left_motors, self.right_motors)
 
         # Navx
         self.navx = AHRS.create_spi()
+
+        # PID
+        self.PID = PIDController(*constants.Kdrivetrain_PID)
+        self.PID.setTolerance(3.5)
 
         # Configs
         self.drivetrain.setSafetyEnabled(True)
@@ -37,7 +41,6 @@ class Drivetrain(Subsystem):
 
         self.field = Field2d()
         self.slowMode = False
-        
 
     def periodic(self):
         # SmartDashboard
@@ -45,6 +48,10 @@ class Drivetrain(Subsystem):
         SmartDashboard.putNumber("Drivetrain/Left Back Motor", self.left_back_motor.get())
         SmartDashboard.putNumber("Drivetrain/Right Front Motor", self.right_front_motor.get())
         SmartDashboard.putNumber("Drivetrain/Right Back Motor", self.right_back_motor.get())
+        SmartDashboard.putNumber("NavX/Yaw Position", self.navx.getYaw())
+
+    def resetNavX(self):
+        self.navx.reset()
 
     def setSlowMode(self) -> Command:
         return self.run(lambda: setattr(self, "slowMode", not self.slowMode))
@@ -62,15 +69,17 @@ class Drivetrain(Subsystem):
     
     def rotate(self, angle: float) -> Command:
         return PIDCommand(
-            PIDController(*constants.Kdrivetrain_PID),
+            self.PID,
             lambda: self.navx.getAngle(),
             angle,
-            lambda output: self.drivetrain.arcadeDrive(0, output, False),
+            lambda output: self.drivetrain.arcadeDrive(0, Utils.clamp(output, -SLOW_MODE_SPEED, SLOW_MODE_SPEED), False),
             self,
         )
-
     def front(self) -> Command:
         return self.run(lambda: self.drivetrain.arcadeDrive(FRONT_SPEED, 0, False))
     
     def back(self) -> Command:
         return self.run(lambda: self.drivetrain.arcadeDrive(BACK_SPEED, 0, False))
+    
+    def stop(self) -> Command:
+        return self.run(lambda: self.arcadeDriveCommand(0,0))
