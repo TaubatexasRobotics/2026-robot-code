@@ -4,12 +4,8 @@ from drivetrain import Drivetrain
 import constants
 from commands2.button import JoystickButton, POVButton, CommandXboxController
 from intake import Intake
-
+from gate import Gate
 class MyRobot(TimedCommandRobot):
-
-    driverJoystick: RampJoystick = RampJoystick(constants.Kdriver_joystick, 0,0,0,0)
-    copilotJoystick : RampJoystick = RampJoystick(constants.Kcodriver_joystick, 0,0,0,0)
-    
     def combineAxis(self, joystick: RampJoystick, left_axis, right_axis) -> float:
         leftTrigger = -joystick.getRawAxis(left_axis)
         rightTrigger = joystick.getRawAxis(right_axis)
@@ -21,32 +17,35 @@ class MyRobot(TimedCommandRobot):
         return rightTrigger + leftTrigger
     
     def robotInit(self) -> None:
-        self.driver_joystick : RampJoystick = RampJoystick(constants.Kdriver_joystick,0.5,0.7,0.8,0.2)
-        self.codriver_joystick : RampJoystick = RampJoystick(constants.Kcodriver_joystick,0.5,0.7,0.8,0.2)
-        self.drivetrain : Drivetrain = Drivetrain()
-        self.intake : Intake = Intake() 
+        # Joysticks
+        self.driver_joystick = RampJoystick(constants.Kdriver_joystick,0.5,0.7,0.8,0.2)
+        self.codriver_joystick = RampJoystick(constants.Kcodriver_joystick,0.5,0.7,0.8,0.2)
+        self.codriver_xbox_controller = CommandXboxController(constants.Kcodriver_joystick)
+        # Subsystens
+        self.drivetrain = Drivetrain()
+        self.intake = Intake()
+        self.gate = Gate()
         
-        # Driver joystick buttons
-        JoystickButton(self.driverJoystick, 3).toggleOnTrue(self.intake.colectGamePiece())
-
-        JoystickButton(self.driverJoystick, 4).whileTrue(self.intake.releaseGamePiece())
-        
+        # Driver joystick buttons        
         self.drivetrain.setDefaultCommand(
             self.drivetrain.arcadeDriveCommand(
-                lambda: -self.combineAxis(self.driverJoystick, 2, 3),
-                lambda: self.driverJoystick.getRawAxis(0)
+                lambda: -self.combineAxis(self.driver_joystick, 2, 3),
+                lambda: self.driver_joystick.getRawAxis(0)
             )
         )
 
         # Copilot joystick buttons
-        POVButton(self.copilotJoystick, 0).whileTrue(
+        POVButton(self.codriver_joystick, 0).whileTrue(
             self.intake.up()
         )
-
-        POVButton(self.copilotJoystick, 180).whileTrue(
+        POVButton(self.codriver_joystick, 180).whileTrue(
             self.intake.down()
         )
-        
+
+        self.codriver_xbox_controller.rightBumper().whileTrue(self.gate.openGate())
+        self.codriver_xbox_controller.leftBumper().whileTrue(self.gate.closeGate())
+
+
     def teleopInit(self) -> None:
         
         self.drivetrain.setDefaultCommand(
